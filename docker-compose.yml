@@ -6,19 +6,25 @@ services:
     container_name: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: 111
       MYSQL_DATABASE: spikeguard
       MYSQL_USER: spikeuser
-      MYSQL_PASSWORD: spikepassword
+      MYSQL_PASSWORD: 111
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth_service:
-    build: ./auth_service
+    build: ./auth
     container_name: auth_service
     ports:
-      - "8000:8000"
+      - "5000:5000"
     environment:
-      - DATABASE_URL=mysql+mysqlconnector://spikeuser:spikepassword@mysql/spikeguard
+      - DATABASE_URL=mysql+mysqlconnector://spikeuser:111@mysql/spikeguard
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
