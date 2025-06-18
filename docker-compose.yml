@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: spikeguard
+      MYSQL_USER: spikeuser
+      MYSQL_PASSWORD: spikepassword
+    ports:
+      - "3306:3306"
+
+  auth_service:
+    build: ./auth_service
+    container_name: auth_service
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+mysqlconnector://spikeuser:spikepassword@mysql/spikeguard
+    depends_on:
+      - mysql
