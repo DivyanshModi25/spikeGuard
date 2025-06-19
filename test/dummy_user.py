@@ -10,6 +10,7 @@ API_KEY = "7751eeae5c0cc223b0215e7d4a274be9"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]
+# log_levels = ["ERROR"]
 
 while True:
     log_data = {

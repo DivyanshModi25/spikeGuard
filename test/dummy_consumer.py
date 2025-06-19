@@ -2,7 +2,7 @@ from kafka import KafkaConsumer
 import json
 
 # Kafka broker address (depends on docker-compose network)
-KAFKA_BROKER = "host.docker.internal:9092"  # or your internal docker network if required
+KAFKA_BROKER = "localhost:9092"  # or your internal docker network if required
 TOPIC_NAME = "logs"
 
 consumer = KafkaConsumer(
