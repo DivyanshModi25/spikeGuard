@@ -4,7 +4,7 @@ import { jwtVerify ,importSPKI} from 'jose';
 import { PUBLIC_KEY } from './lib/public';
 
 const protectedRoutes = ['/dashboard'];
-const publicRoutes = ['/', '/login', '/signup'];
+const publicRoutes = ['/login', '/signup'];
 
 // const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_SECRET = PUBLIC_KEY;
