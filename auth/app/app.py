@@ -7,7 +7,6 @@ from decorator import token_required
 
 app=Flask(__name__)
 
-
 # Auto create tables
 Base.metadata.create_all(bind=engine)
 
@@ -31,7 +30,7 @@ def register():
 
         existing_user = db.query(models.User).filter_by(email=email).first()
         if existing_user:
-            return jsonify({"error": "Email already registered"}), 400
+            return jsonify({"error": "Email already registered"}), 401
         
         hashed_password=utils.hash_password(password)
         user = models.User(email=email,name=name,hashed_password=hashed_password)
@@ -43,8 +42,9 @@ def register():
     
     finally:
         db.close()
-
-    return jsonify({"message":"user created successfully"})
+    
+    print(dict(request.headers)) 
+    return jsonify({"message":"user created successfully"}),200
     
 
 @app.route('/login',methods=['POST'])
@@ -62,7 +62,7 @@ def login():
             return jsonify({"error":"invalid credentials"}),401
         
         token=utils.create_access_token({"user_id":user.id})
-        resp = jsonify({"message": "Login successful"})
+        resp = jsonify({"message": "Login successful"}),200
         resp.set_cookie(
             "access_token", 
             token, 
