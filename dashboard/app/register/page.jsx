@@ -1,8 +1,10 @@
 "use client"
 import React from 'react';
 import { useForm } from 'react-hook-form';  
+import {useRouter} from 'next/navigation'
 
 export default function RegistrationPage() {
+  const router=useRouter()
 
   const {register,handleSubmit,formState:{errors}} = useForm(); 
 
@@ -20,6 +22,11 @@ export default function RegistrationPage() {
         const resdata=await res.json()
         console.log(res);
         console.log(resdata);
+
+        if(res.ok==true)
+        {
+           router.push('/login')
+        }
         
         
         

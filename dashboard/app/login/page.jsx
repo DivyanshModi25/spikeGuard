@@ -1,9 +1,11 @@
 "use client"
+import { useRouter } from 'next/navigation';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
 export default function LoginPage() {
-
+  const router=useRouter()
+  
   const {register,handleSubmit,formState:{errors}} = useForm(); 
   
   const loginSubmit=async(data)=>{
@@ -22,6 +24,10 @@ export default function LoginPage() {
         console.log(res);
         console.log(resdata);
         
+        if(res.ok==true)
+        {
+          router.push("/dashboard")
+        }
         
         
       } catch (error) {
