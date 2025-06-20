@@ -99,16 +99,32 @@ export default function Dashboard() {
     setServices(services.filter(service => service.id !== id));
   };
 
-  const goToAnalysis = (service) => {
-    console.log('Navigate to analysis page for:', service);
-  };
-
+ 
   const filteredServices = services.filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalRequests = services.reduce((sum, service) => sum + service.requests, 0);
   const activeServices = services.filter(service => service.status === 'active').length;
+
+
+  const handleLogout=async()=>{
+    try {
+      const res=await fetch('http://localhost/auth/logout',{
+        credentials:'include'
+      })
+      const data=await res.json()
+      console.log(res,data);
+      
+      if(res.ok==true)
+      {
+         router.push("/login")
+      }
+
+    } catch (error) {
+      console.log(error);      
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#4e4e4e31] text-white">
@@ -153,7 +169,7 @@ export default function Dashboard() {
                 <span className='text-[12px] text-white'>Docs</span>
               </button>
               <button
-                onClick={() => goToAnalysis(service)}
+                onClick={handleLogout}
                 className="flex items-center space-x-2 bg-gray-700 hover:bg-gray-600 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer"
               >
                 <LogOutIcon className="w-4 h-4"/>

@@ -78,6 +78,21 @@ def login():
 
     return resp
 
+@app.route("/logout")
+def logout():
+    resp = jsonify({"message": "Logged out successfully"})
+    resp.set_cookie(
+        "access_token", 
+        "", 
+        expires=0, 
+        httponly=True, 
+        secure=True, 
+        samesite='Strict'
+    )
+    resp.status_code=200
+    return resp
+
+
 
 # create services
 
