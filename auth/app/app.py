@@ -93,6 +93,26 @@ def logout():
     return resp
 
 
+@app.route("/user-detail",methods=['POST'])
+@token_required
+def get_user_details():
+    data=request.json
+    db=sessionLocal()
+
+    try:
+        user_id=data['user_id']
+        user=db.query(models.User).filter_by(id=user_id).first()
+        
+        return jsonify({
+            'id':user.id,
+            'name':user.name,
+            'email':user.email
+        }),200
+    except:
+        return jsonify({"error":"internal server error"}),401
+    finally:
+        db.close()
+
 
 # create services
 

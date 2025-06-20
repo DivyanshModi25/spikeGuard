@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Search, Copy, Activity, Key, Plus, Trash2, Eye, BarChart3, Zap, Globe, Shield, LogOutIcon, Book, BookA, BookAIcon, BookImage, BookOpen, House } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 
 const servicesMock = [
   {
@@ -68,26 +69,27 @@ const servicesMock = [
 
 export default function Dashboard() {
   const router=useRouter()
+  const {handleSubmit,register,formState:{errors}}=useForm()
   const [services, setServices] = useState(servicesMock);
   const [newService, setNewService] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedKey, setCopiedKey] = useState('');
 
-  const handleCreateService = () => {
-    if (!newService.trim()) return;
-    const newEntry = {
-      id: Date.now(),
-      name: newService,
-      apiKey: 'sk-prod-' + Math.random().toString(36).substring(2, 16),
-      logs: ['Service created'],
-      status: 'active',
-      requests: 0,
-      uptime: '100%',
-      category: 'Custom'
-    };
-    setServices([newEntry, ...services]);
-    setNewService('');
-  };
+  // const handleCreateService = () => {
+  //   if (!newService.trim()) return;
+  //   const newEntry = {
+  //     id: Date.now(),
+  //     name: newService,
+  //     apiKey: 'sk-prod-' + Math.random().toString(36).substring(2, 16),
+  //     logs: ['Service created'],
+  //     status: 'active',
+  //     requests: 0,
+  //     uptime: '100%',
+  //     category: 'Custom'
+  //   };
+  //   setServices([newEntry, ...services]);
+  //   setNewService('');
+  // };
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -121,6 +123,30 @@ export default function Dashboard() {
          router.push("/login")
       }
 
+    } catch (error) {
+      console.log(error);      
+    }
+  }
+
+  const handleCreateService=async(data)=>{
+    try {
+      const name=data.newService
+      const res=await fetch('http://localhost/auth/services',{
+        method:"POST",
+        credentials:'include',
+        headers:{
+          'content-type':'application/json'
+        },
+        body:JSON.stringify({
+          "name":name
+        })
+      })
+
+      const resData=await res.json()
+      console.log(res,resData)      
+      
+
+      
     } catch (error) {
       console.log(error);      
     }
@@ -192,26 +218,26 @@ export default function Dashboard() {
               <p className="text-sm text-gray-400">Generate a service and get its unique API key</p>
             </div>
           </div>
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
+          <form className="flex gap-4" onSubmit={handleSubmit(handleCreateService)}>
+            <div className="flex-1 relative" >
               <input
+                {...register("newService")}
                 value={newService}
                 onChange={(e) => setNewService(e.target.value)}
                 type="text"
                 placeholder="Enter service name..."
                 className="w-full px-4 py-3 bg-black/60 border border-[#333333] text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500 transition-all duration-200"
-                onKeyPress={(e) => e.key === 'Enter' && handleCreateService()}
+                
               />
               <Zap className="absolute right-3 top-3.5 w-5 h-5 text-gray-500" />
             </div>
             <button
-              onClick={handleCreateService}
               disabled={!newService.trim()}
               className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-orange-700 hover:to-red-600 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-orange-500/25"
             >
               Create Service
             </button>
-          </div>
+          </form>
         </div>
 
         {/* Search and Services Header */}
