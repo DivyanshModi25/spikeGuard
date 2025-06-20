@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Copy, Activity, Key, Plus, Trash2, Eye, BarChart3, Zap, Globe, Shield, LogOutIcon, Book, BookA, BookAIcon, BookImage, BookOpen, House } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -8,7 +8,7 @@ const servicesMock = [
   {
     id: 1,
     name: 'Image Recognition API',
-    apiKey: 'sk-prod-9f13kfj32kl3',
+    api_key: 'sk-prod-9f13kfj32kl3',
     logs: ['Initialized service', 'User call at 10:21 AM', 'Error at 11:10 AM'],
     status: 'active',
     requests: 1247,
@@ -18,7 +18,7 @@ const servicesMock = [
   {
     id: 2,
     name: 'Text Analyzer',
-    apiKey: 'sk-prod-42kfj43ndf02',
+    api_key: 'sk-prod-42kfj43ndf02',
     logs: ['Started session', 'User call at 9:45 AM'],
     status: 'active',
     requests: 892,
@@ -28,7 +28,7 @@ const servicesMock = [
   {
     id: 3,
     name: 'Text Analyzer',
-    apiKey: 'sk-prod-42kfj43ndf02',
+    api_key: 'sk-prod-42kfj43ndf02',
     logs: ['Started session', 'User call at 9:45 AM'],
     status: 'active',
     requests: 892,
@@ -38,7 +38,7 @@ const servicesMock = [
   {
     id: 4,
     name: 'Text Analyzer',
-    apiKey: 'sk-prod-42kfj43ndf02',
+    api_key: 'sk-prod-42kfj43ndf02',
     logs: ['Started session', 'User call at 9:45 AM'],
     status: 'active',
     requests: 892,
@@ -48,7 +48,7 @@ const servicesMock = [
   {
     id: 5,
     name: 'Payement service',
-    apiKey: 'sk-prod-42kfj43ndf02',
+    api_key: 'sk-prod-42kfj43ndf02',
     logs: ['Started session', 'User call at 9:45 AM'],
     status: 'active',
     requests: 892,
@@ -58,7 +58,7 @@ const servicesMock = [
   {
     id: 6,
     name: 'Payement service',
-    apiKey: 'sk-prod-42kfj43ndf02',
+    api_key: 'sk-prod-42kfj43ndf02',
     logs: ['Started session', 'User call at 9:45 AM'],
     status: 'active',
     requests: 892,
@@ -74,13 +74,14 @@ export default function Dashboard() {
   const [newService, setNewService] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedKey, setCopiedKey] = useState('');
+  const [serviceList,setServiceList]=useState([])
 
   // const handleCreateService = () => {
   //   if (!newService.trim()) return;
   //   const newEntry = {
   //     id: Date.now(),
   //     name: newService,
-  //     apiKey: 'sk-prod-' + Math.random().toString(36).substring(2, 16),
+  //     api_key: 'sk-prod-' + Math.random().toString(36).substring(2, 16),
   //     logs: ['Service created'],
   //     status: 'active',
   //     requests: 0,
@@ -102,7 +103,7 @@ export default function Dashboard() {
   };
 
  
-  const filteredServices = services.filter(service =>
+  const filteredServices = serviceList.filter(service =>
     service.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -143,14 +144,47 @@ export default function Dashboard() {
       })
 
       const resData=await res.json()
-      console.log(res,resData)      
+      console.log(res,resData)     
       
+      if(res.ok==true)
+      {
+          setServiceList([...serviceList,{
+            id:resData.id,
+            name:resData.service_name,
+            api_key:resData.api_key
+          }])
+      }     
 
       
     } catch (error) {
       console.log(error);      
     }
   }
+
+  useEffect(()=>{
+
+    const serviceList=async()=>{
+        try {
+          const res=await fetch("http://localhost/auth/services",{
+            credentials:'include'
+          })
+          const data=await res.json()
+          console.log(data);
+          
+          if(res.ok==true)
+          {
+              setServiceList(data)
+          }
+
+        } catch (error) {
+          console.log(error);
+          
+        }
+    }
+
+    serviceList()
+
+  },[])
 
   return (
     <div className="min-h-screen bg-[#4e4e4e31] text-white">
@@ -233,7 +267,7 @@ export default function Dashboard() {
             </div>
             <button
               disabled={!newService.trim()}
-              className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-orange-700 hover:to-red-600 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-orange-500/25"
+              className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-orange-700 hover:to-red-600 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed cursor-pointer px-8 py-3 rounded-xl font-medium transition-all duration-200 hover:shadow-orange-500/25"
             >
               Create Service
             </button>
@@ -263,7 +297,7 @@ export default function Dashboard() {
           {filteredServices.map((service) => (
             <div
               key={service.id}
-              className="bg-[#111111] border-1 border-[#222222] rounded-2xl p-10 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#4b4a4a]"
+              className="bg-[#111111] h-fit border-1 border-[#222222] rounded-2xl p-10 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#4b4a4a]"
             >
               <div className="flex justify-between">
                 <div className="flex-1">
@@ -275,7 +309,7 @@ export default function Dashboard() {
                       <h3 className="text-xl font-semibold text-white mb-1">{service.name}</h3>
                       <div className="flex items-center space-x-4 text-sm">
                         <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-lg font-medium">
-                          {service.category}
+                          "service.category"
                         </span>
                         <div className="flex items-center space-x-1">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -286,7 +320,7 @@ export default function Dashboard() {
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => goToAnalysis(service)}
+                        onClick={() => router.push(`/dashboard/analytics/${service.id}`)}
                         className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-orange-700 hover:to-red-600 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-orange-500/25 cursor-pointer"
                       >
                         <BarChart3 className="w-4 h-4" />
@@ -316,16 +350,16 @@ export default function Dashboard() {
                         <Key className="w-4 h-4 text-gray-400" />
                         <span className="text-sm text-gray-400">API Key:</span>
                         <code className="text-orange-400 font-mono text-sm bg-orange-500/10 px-2 py-1 rounded">
-                          {service.apiKey}
+                          {service.api_key}
                         </code>
                       </div>
                       <button
-                        onClick={() => handleCopy(service.apiKey)}
+                        onClick={() => handleCopy(service.api_key)}
                         className="flex items-center space-x-2 text-orange-500 hover:text-orange-400 transition-colors duration-200 group/copy cursor-pointer"
                       >
                         <Copy className="w-4 h-4" />
                         <span className="text-sm font-medium">
-                          {copiedKey === service.apiKey ? 'Copied!' : 'Copy'}
+                          {copiedKey === service.api_key ? 'Copied!' : 'Copy'}
                         </span>
                       </button>
                     </div>
@@ -334,15 +368,15 @@ export default function Dashboard() {
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-1 bg-black/20 rounded-lg border border-gray-700">
-                      <div className="text-lg font-bold text-white">{service.requests.toLocaleString()}</div>
+                      <div className="text-lg font-bold text-white">"100"</div>
                       <div className="text-xs text-gray-400">Requests</div>
                     </div>
                     <div className="text-center p-1 bg-black/20 rounded-lg border border-gray-700">
-                      <div className="text-lg font-bold text-green-400">{service.uptime}</div>
+                      <div className="text-lg font-bold text-green-400">"50%"</div>
                       <div className="text-xs text-gray-400">Uptime</div>
                     </div>
                     <div className="text-center p-1 bg-black/20 rounded-lg border border-gray-700">
-                      <div className="text-lg font-bold text-blue-400">{service.logs.length}</div>
+                      <div className="text-lg font-bold text-blue-400">"5000"</div>
                       <div className="text-xs text-gray-400">Logs</div>
                     </div>
                   </div>
