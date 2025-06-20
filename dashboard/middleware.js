@@ -1,19 +1,22 @@
 // middleware.js
 import { NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { jwtVerify ,importSPKI} from 'jose';
+import { PUBLIC_KEY } from './lib/public';
 
 const protectedRoutes = ['/dashboard'];
 const publicRoutes = ['/', '/login', '/signup'];
 
 // const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = PUBLIC_KEY;
 
 async function verifyJWT(token) {
   try {
-    const { payload } = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
+    const encoder = new TextEncoder();
+    const key = await importSPKI(PUBLIC_KEY, 'RS256'); // 👈 THIS is correct for RS256
+    const { payload } = await jwtVerify(token, key);
     return payload;
   } catch (err) {
-    return null; // Invalid token
+    return null;
   }
 }
 
