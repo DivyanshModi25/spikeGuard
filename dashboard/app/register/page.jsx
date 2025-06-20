@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form';
 
 export default function RegistrationPage() {
 
-  const {register,handleSubmit} = useForm(); 
+  const {register,handleSubmit,formState:{errors}} = useForm(); 
+
   const registerSubmit=async(data)=>{
       try {
         console.log(data);
@@ -39,33 +40,48 @@ export default function RegistrationPage() {
           <div>
             <label className="block text-sm text-gray-400 mb-1">Full Name</label>
             <input
-              {...register("name")}
+              {...register("name",{required:"Name is required"})}
               type="text"
               placeholder="John Doe"
               className="w-full px-4 py-2 bg-[#2c2c2c] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
+            {errors.name && <p className="text-red-500 text-center text-sm mt-1">{errors.name.message}</p>}
           </div>
 
           {/* Email */}
           <div>
             <label className="block text-sm text-gray-400 mb-1">Email</label>
             <input
-              {...register("email")}
+              {...register("email",{
+                required: "Email is required",
+                pattern: {
+                  value: /^\S+@\S+$/i,
+                  message: "Enter a valid email"
+                }
+              })}
               type="email"
               placeholder="you@example.com"
               className="w-full px-4 py-2 bg-[#2c2c2c] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
+            {errors.email && <p className="text-red-500 text-center text-sm mt-1">{errors.email.message}</p>}
           </div>
 
           {/* Password */}
           <div>
             <label className="block text-sm text-gray-400 mb-1">Password</label>
             <input
-              {...register("password")}
+              {...register("password",{
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters"
+                }
+              })}
               type="password"
               placeholder="••••••••"
               className="w-full px-4 py-2 bg-[#2c2c2c] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
+            {errors.password && <p className="text-red-500 text-center text-sm mt-1">{errors.password.message}</p>}
           </div>
 
          

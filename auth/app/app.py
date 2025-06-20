@@ -62,7 +62,7 @@ def login():
             return jsonify({"error":"invalid credentials"}),401
         
         token=utils.create_access_token({"user_id":user.id})
-        resp = jsonify({"message": "Login successful"}),200
+        resp = jsonify({"message": "Login successful"})
         resp.set_cookie(
             "access_token", 
             token, 
@@ -70,8 +70,9 @@ def login():
             secure=True, 
             samesite='Strict'
         )
+        resp.status_code = 201
     except Exception as e:
-        return jsonify({"message":f"{e}"})
+        return jsonify({"message":f"{e}"}),401
     finally:
         db.close()
 
