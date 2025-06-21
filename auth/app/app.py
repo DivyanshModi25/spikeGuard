@@ -3,6 +3,7 @@ from db import engine, sessionLocal,Base
 import models
 import utils
 from decorator import token_required
+import requests 
 
 
 app=Flask(__name__)
@@ -190,15 +191,27 @@ def list_services():
         services=db.query(models.Service).filter_by(owner_id=user_id).all()
         services_list=[]
 
+        try:
+            metrics_response = requests.get("http://nginx/analyze/metrics/services", cookies=request.cookies)
+            metrics_data = metrics_response.json() if metrics_response.status_code == 200 else []
+        except Exception as e:
+            metrics_data = []  # Fallback
 
+        metrics_map = {item["service_id"]: item for item in metrics_data}
 
+        # Step 4: Merge service data with metrics
+        services_list = []
         for s in services:
+            metric = metrics_map.get(s.id, {"total_logs": 0, "error_logs": 0})
             services_list.append({
-                "id":s.id,
-                "name":s.name,
-                "api_key":s.api_key,
-                "flag":s.flag
+                "id": s.id,
+                "name": s.name,
+                "api_key": s.api_key,
+                "flag": s.flag,
+                "total_logs": int(metric["total_logs"]),
+                "error_logs": int(metric["error_logs"])
             })
+
     except Exception as e:
         return jsonify({"message":f"{e}"})
     finally:
