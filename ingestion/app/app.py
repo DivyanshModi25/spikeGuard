@@ -18,16 +18,16 @@ def ingest_log():
 
     try:
         data = request.json 
-        required_fields = ['service_api_key', 'log_level', 'message']
+        required_fields = ['api_key', 'log_level', 'message']
 
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing field {field}"}), 400
         
 
-        service = db.query(models.Service).filter_by(api_key=data['service_api_key']).first()
+        service = db.query(models.Service).filter_by(api_key=data['api_key']).first()
         if not service:
-            return jsonify({"error": "Invalid service_api_key"}), 401
+            return jsonify({"error": "Invalid api_key"}), 401
         
 
         if 'timestamp' not in data:
@@ -36,7 +36,7 @@ def ingest_log():
 
         if 'meta' not in data:
             data['meta'] = {
-                'ip' : request.headers.get('X-Forwarded-For', request.remote_addr)
+                'dev_ip' : request.headers.get('X-Forwarded-For', request.remote_addr)
             }
 
         # Send to Kafka

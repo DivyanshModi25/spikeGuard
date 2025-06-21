@@ -19,28 +19,25 @@ consumer = KafkaConsumer(
     value_deserializer=lambda x: json.loads(x.decode('utf-8')),
     auto_offset_reset='earliest',
     enable_auto_commit=True,
-    group_id='analyzer-consumer-service'
+    group_id='log_db_aggregator'
 )
 
-
-print("kafka_consumer connected!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-print("subscribed to :",consumer.topics())
 
 for message in consumer:
     data=message.value
     print(f"received log {data} from kafka by the analyze_consumer service")
     db=sessionLocal()
 
-    service=db.query(Service).filter_by(api_key=data['service_api_key']).first()
+    service=db.query(Service).filter_by(api_key=data['api_key']).first()
 
     try:
         log_entry=Log(
-            service_id=service.id,
+            service_id=service.service_id,
             log_level=data['log_level'],
             message=data['message'],
             timestamp=datetime.fromisoformat(data['timestamp']),
-            api_key=data['service_api_key'],
-            ip=data['meta']['ip']
+            api_key=data['api_key'],
+            dev_ip=data['meta']['dev_ip']
         )
 
         db.add(log_entry)

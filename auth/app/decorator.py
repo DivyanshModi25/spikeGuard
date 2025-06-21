@@ -15,7 +15,7 @@ def token_required(f):
             data = utils.verify_access_token(token)
             if data is None:
                 raise Exception("Invalid token")
-            request.user_id = data["user_id"]
+            request.dev_id = data["dev_id"]
 
         except Exception as e:
             return jsonify({"message": str(e)}), 401

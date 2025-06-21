@@ -1,6 +1,6 @@
 from flask import Flask,request,jsonify
 from db import engine, sessionLocal,Base
-import models
+from models import Developers,Service,AggregatedMetric
 import utils
 from decorator import token_required
 import requests 
@@ -16,26 +16,26 @@ def health():
     return jsonify({"status":"healthy"})
 
 
-# Register user
+# Register user(Developer)
 @app.route('/register',methods=['POST'])
 def register():
     data=request.json
     db=sessionLocal()
 
     try:
-        name=data['name']
-        email=data['email']
+        dev_name=data['dev_name']
+        dev_email=data['dev_email']
         password=data['password']
 
 
 
-        existing_user = db.query(models.User).filter_by(email=email).first()
-        if existing_user:
+        existing_developer = db.query(Developers).filter_by(dev_email=dev_email).first()
+        if existing_developer:
             return jsonify({"error": "Email already registered"}), 401
         
         hashed_password=utils.hash_password(password)
-        user = models.User(email=email,name=name,hashed_password=hashed_password)
-        db.add(user)
+        dev = Developers(dev_email=dev_email,dev_name=dev_name,hashed_password=hashed_password)
+        db.add(dev)
         db.commit()
 
     except Exception as e:
@@ -45,7 +45,7 @@ def register():
         db.close()
     
     print(dict(request.headers)) 
-    return jsonify({"message":"user created successfully"}),200
+    return jsonify({"message":"Developer created successfully"}),200
     
 
 @app.route('/login',methods=['POST'])
@@ -54,15 +54,15 @@ def login():
     db=sessionLocal()
 
     try:
-        email=data['email']
+        dev_email=data['dev_email']
         password=data['password']
 
-        user=db.query(models.User).filter_by(email=email).first()
+        dev=db.query(Developers).filter_by(dev_email=dev_email).first()
 
-        if not user or not utils.verify_password(password,user.hashed_password):
+        if not dev or not utils.verify_password(password,dev.hashed_password):
             return jsonify({"error":"invalid credentials"}),401
         
-        token=utils.create_access_token({"user_id":user.id})
+        token=utils.create_access_token({"dev_id":dev.dev_id})
         resp = jsonify({"message": "Login successful"})
         resp.set_cookie(
             "access_token", 
@@ -94,20 +94,20 @@ def logout():
     return resp
 
 
-@app.route("/user-detail",methods=['POST'])
+@app.route("/developer_details",methods=['POST'])
 @token_required
-def get_user_details():
+def get_developer_details():
     data=request.json
     db=sessionLocal()
 
     try:
-        user_id=data['user_id']
-        user=db.query(models.User).filter_by(id=user_id).first()
+        dev_id=data['dev_id']
+        dev=db.query(Developers).filter_by(dev_id=dev_id).first()
         
         return jsonify({
-            'id':user.id,
-            'name':user.name,
-            'email':user.email
+            'dev_id':dev.dev_id,
+            'dev_name':dev.dev_name,
+            'dev_email':dev.dev_email
         }),200
     except:
         return jsonify({"error":"internal server error"}),401
@@ -125,17 +125,17 @@ def create_service():
     db=sessionLocal()
 
     try:
-        service_name=data['name']
-        user_id=request.user_id
+        service_name=data['service_name']
+        dev_id=request.dev_id
 
         api_key=utils.generate_api_key()
 
-        service=models.Service(name=service_name,api_key=api_key,owner_id=user_id)
+        service=Service(service_name=service_name,api_key=api_key,owner_id=dev_id)
         db.add(service)
         db.commit()
 
         res={
-            "id":service.id,
+            "service_id":service.service_id,
             "service_name":service_name,
             "api_key":api_key
         }
@@ -156,12 +156,12 @@ def delete_service():
     db=sessionLocal()
 
     try:
-        id=data['id']
-        user_id=request.user_id
+        service_id=data['service_id']
+        dev_id=request.dev_id
 
-        service = db.query(models.Service).filter_by(
-            id=id,
-            owner_id=user_id
+        service = db.query(Service).filter_by(
+            service_id=service_id,
+            owner_id=dev_id
         ).first()
 
         if not service:
@@ -186,9 +186,9 @@ def list_services():
     db=sessionLocal()
 
     try:
-        user_id=request.user_id
+        dev_id=request.dev_id
 
-        services=db.query(models.Service).filter_by(owner_id=user_id).all()
+        services=db.query(Service).filter_by(owner_id=dev_id).all()
         services_list=[]
 
         try:
@@ -202,10 +202,10 @@ def list_services():
         # Step 4: Merge service data with metrics
         services_list = []
         for s in services:
-            metric = metrics_map.get(s.id, {"total_logs": 0, "error_logs": 0})
+            metric = metrics_map.get(s.service_id, {"total_logs": 0, "error_logs": 0})
             services_list.append({
-                "id": s.id,
-                "name": s.name,
+                "service_id": s.service_id,
+                "service_name": s.service_name,
                 "api_key": s.api_key,
                 "flag": s.flag,
                 "total_logs": int(metric["total_logs"]),

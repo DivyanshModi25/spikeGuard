@@ -6,7 +6,7 @@ import time
 INGESTION_URL = "http://localhost/ingest/ingest"  # replace with actual port if different
 
 # Dummy API key (put valid one here after service creation)
-API_KEY = "544e282de90eef1d410dc11ea72ebf77"
+API_KEY = "0f1b4f7ebc87a3a5f41546aade891859"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]
@@ -14,7 +14,7 @@ log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]
 
 while True:
     log_data = {
-        "service_api_key": API_KEY,
+        "api_key": API_KEY,
         "log_level": random.choice(log_levels),
         "message": "This is a test log message."
     }

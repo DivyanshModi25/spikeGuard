@@ -13,11 +13,11 @@ def service_metrices():
     db=sessionLocal()
 
     try:
-        user_id = request.user_id  # We get user ID from token (auth service)
+        dev_id = request.dev_id  # We get user ID from token (auth service)
 
         # First, get all services owned by the user
-        services = db.query(Service).filter_by(owner_id=user_id).all()
-        service_ids = [service.id for service in services]
+        services = db.query(Service).filter_by(owner_id=dev_id).all()
+        service_ids = [service.service_id for service in services]
 
         if not service_ids:
             return jsonify([])
@@ -48,11 +48,11 @@ def service_metrices():
 def service_history(service_id):
     db = sessionLocal()
     try:
-        user_id = request.user_id  # We get user ID from token (auth service)
+        dev_id = request.dev_id  # We get user ID from token (auth service)
 
         # First, get all services owned by the user
-        services = db.query(Service).filter_by(owner_id=user_id).all()
-        service_ids = [service.id for service in services]
+        services = db.query(Service).filter_by(owner_id=dev_id).all()
+        service_ids = [service.service_id for service in services]
 
         if not service_ids:
             return jsonify([])
