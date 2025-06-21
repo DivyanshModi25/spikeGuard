@@ -6,7 +6,7 @@ import time
 INGESTION_URL = "http://localhost/ingest/ingest"  # replace with actual port if different
 
 # Dummy API key (put valid one here after service creation)
-API_KEY = "d3f4ee3c4ee32744a756ad7b273d705f"
+API_KEY = "544e282de90eef1d410dc11ea72ebf77"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]

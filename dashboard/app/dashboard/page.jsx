@@ -49,10 +49,10 @@ export default function Dashboard() {
     )
   : [];
 
-  // const totalRequests = services.reduce((sum, service) => sum + service.requests, 0);
-  const totalRequests = 0;
-  // const activeServices = services.filter(service => service.status === 'active').length;
-  const activeServices = 0;
+  const total_logs = serviceList.reduce((sum, service) => sum + service.total_logs, 0);
+  // const total_logs = 0;
+  const TotalErrorLogs = serviceList.reduce((sum, service) => sum + service.error_logs, 0);
+  // const TotalErrorLogs = 0;
 
 
   const handleLogout=async()=>{
@@ -96,7 +96,9 @@ export default function Dashboard() {
             id:resData.id,
             name:resData.service_name,
             api_key:resData.api_key,
-            flag:true 
+            flag:true ,
+            error_logs:0,
+            total_logs:0
           }])
       }     
 
@@ -173,12 +175,12 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-6 text-sm">
                 <div className="text-center">
-                  <div className="text-xl font-bold text-orange-500">{activeServices}</div>
-                  <div className="text-gray-400">Active Services</div>
+                  <div className="text-xl font-bold text-orange-500">{total_logs.toLocaleString()}</div>
+                  <div className="text-gray-400">Total Logs</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xl font-bold text-orange-500">{totalRequests.toLocaleString()}</div>
-                  <div className="text-gray-400">Total Requests</div>
+                  <div className="text-xl font-bold text-orange-500">{TotalErrorLogs}</div>
+                  <div className="text-gray-400">Error logs</div>
                 </div>
               </div>
             </div>
@@ -337,16 +339,16 @@ export default function Dashboard() {
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-1 bg-black/20 rounded-lg border border-gray-700">
-                      <div className="text-lg font-bold text-white">"100"</div>
-                      <div className="text-xs text-gray-400">Requests</div>
+                      <div className="text-lg font-bold text-white">{service.total_logs}</div>
+                      <div className="text-xs text-gray-400">logs</div>
                     </div>
                     <div className="text-center p-1 bg-black/20 rounded-lg border border-gray-700">
                       <div className="text-lg font-bold text-green-400">"50%"</div>
                       <div className="text-xs text-gray-400">Uptime</div>
                     </div>
                     <div className="text-center p-1 bg-black/20 rounded-lg border border-gray-700">
-                      <div className="text-lg font-bold text-blue-400">"5000"</div>
-                      <div className="text-xs text-gray-400">Logs</div>
+                      <div className="text-lg font-bold text-blue-400">{service.error_logs}</div>
+                      <div className="text-xs text-gray-400">Error Logs</div>
                     </div>
                   </div>
                 </div>
