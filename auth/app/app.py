@@ -148,6 +148,35 @@ def create_service():
     return jsonify(res)
 
 
+@app.route("/delete_service",methods=['POST'])
+@token_required
+def delete_service():
+    data=request.json
+    db=sessionLocal()
+
+    try:
+        id=data['id']
+        user_id=request.user_id
+
+        service = db.query(models.Service).filter_by(
+            id=id,
+            owner_id=user_id
+        ).first()
+
+        if not service:
+            return jsonify({"error": "Service not found"}), 404
+
+        service.flag = False
+        db.commit()
+
+        return jsonify({"message": "Service deactivated successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"message":f"{e}"})
+    finally:
+        db.close()
+
+
 # list services
 @app.route("/services",methods=['GET'])
 @token_required
@@ -161,11 +190,14 @@ def list_services():
         services=db.query(models.Service).filter_by(owner_id=user_id).all()
         services_list=[]
 
+
+
         for s in services:
             services_list.append({
                 "id":s.id,
                 "name":s.name,
-                "api_key":s.api_key
+                "api_key":s.api_key,
+                "flag":s.flag
             })
     except Exception as e:
         return jsonify({"message":f"{e}"})

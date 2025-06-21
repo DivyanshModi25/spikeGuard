@@ -4,77 +4,17 @@ import { Search, Copy, Activity, Key, Plus, Trash2, Eye, BarChart3, Zap, Globe, 
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
-const servicesMock = [
-  {
-    id: 1,
-    name: 'Image Recognition API',
-    api_key: 'sk-prod-9f13kfj32kl3',
-    logs: ['Initialized service', 'User call at 10:21 AM', 'Error at 11:10 AM'],
-    status: 'active',
-    requests: 1247,
-    uptime: '99.9%',
-    category: 'AI/ML'
-  },
-  {
-    id: 2,
-    name: 'Text Analyzer',
-    api_key: 'sk-prod-42kfj43ndf02',
-    logs: ['Started session', 'User call at 9:45 AM'],
-    status: 'active',
-    requests: 892,
-    uptime: '100%',
-    category: 'Processing'
-  },
-  {
-    id: 3,
-    name: 'Text Analyzer',
-    api_key: 'sk-prod-42kfj43ndf02',
-    logs: ['Started session', 'User call at 9:45 AM'],
-    status: 'active',
-    requests: 892,
-    uptime: '100%',
-    category: 'Processing'
-  },
-  {
-    id: 4,
-    name: 'Text Analyzer',
-    api_key: 'sk-prod-42kfj43ndf02',
-    logs: ['Started session', 'User call at 9:45 AM'],
-    status: 'active',
-    requests: 892,
-    uptime: '100%',
-    category: 'Processing'
-  },
-  {
-    id: 5,
-    name: 'Payement service',
-    api_key: 'sk-prod-42kfj43ndf02',
-    logs: ['Started session', 'User call at 9:45 AM'],
-    status: 'active',
-    requests: 892,
-    uptime: '100%',
-    category: 'Processing'
-  },
-  {
-    id: 6,
-    name: 'Payement service',
-    api_key: 'sk-prod-42kfj43ndf02',
-    logs: ['Started session', 'User call at 9:45 AM'],
-    status: 'active',
-    requests: 892,
-    uptime: '100%',
-    category: 'Processing'
-  },
-];
+
+
 
 export default function Dashboard() {
   const router=useRouter()
   const {handleSubmit,register,formState:{errors}}=useForm()
-  const [services, setServices] = useState(servicesMock);
   const [newService, setNewService] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedKey, setCopiedKey] = useState('');
   const [serviceList,setServiceList]=useState([])
+  // const [services, setServices] = useState([]);
 
   // const handleCreateService = () => {
   //   if (!newService.trim()) return;
@@ -98,17 +38,21 @@ export default function Dashboard() {
     setTimeout(() => setCopiedKey(''), 2000);
   };
 
-  const handleDeleteService = (id) => {
-    setServices(services.filter(service => service.id !== id));
-  };
+  // const handleDeleteService = (id) => {
+  //   setServices(services.filter(service => service.id !== id));
+  // };
 
  
-  const filteredServices = serviceList.filter(service =>
-    service.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredServices = Array.isArray(serviceList)
+  ? serviceList.filter(service =>
+      service.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  : [];
 
-  const totalRequests = services.reduce((sum, service) => sum + service.requests, 0);
-  const activeServices = services.filter(service => service.status === 'active').length;
+  // const totalRequests = services.reduce((sum, service) => sum + service.requests, 0);
+  const totalRequests = 0;
+  // const activeServices = services.filter(service => service.status === 'active').length;
+  const activeServices = 0;
 
 
   const handleLogout=async()=>{
@@ -151,7 +95,8 @@ export default function Dashboard() {
           setServiceList([...serviceList,{
             id:resData.id,
             name:resData.service_name,
-            api_key:resData.api_key
+            api_key:resData.api_key,
+            flag:true 
           }])
       }     
 
@@ -185,6 +130,30 @@ export default function Dashboard() {
     serviceList()
 
   },[])
+
+  const handleDelete=async(service_id)=>{
+      try {
+        console.log(service_id);
+        const res=await fetch('http://localhost/auth/delete_service',{
+          method:'POST',
+          headers:{
+            'content-type':'application/json'
+          },
+          credentials:'include',
+          body:JSON.stringify({id:service_id})
+        })
+        const data=await res.json()
+        console.log(res,data);
+        
+        if(res.ok==true)
+        {
+            setServiceList(prev => prev.filter(service => service.id !== service_id));
+        }
+        
+      } catch (error) {
+        console.log(error);        
+      }
+  }
 
   return (
     <div className="min-h-screen bg-[#4e4e4e31] text-white">
@@ -294,7 +263,7 @@ export default function Dashboard() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-2 gap-6 overflow-y-auto h-[54.6vh] custom-scrollbar px-2">
-          {filteredServices.map((service) => (
+          {filteredServices.map((service) => service.flag && (
             <div
               key={service.id}
               className="bg-[#111111] h-fit border-1 border-[#222222] rounded-2xl p-10 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#4b4a4a]"
@@ -334,7 +303,7 @@ export default function Dashboard() {
                         <span className='text-[12px]'>View Logs</span>
                       </button>
                       <button
-                        onClick={() => handleDeleteService(service.id)}
+                        onClick={()=>{handleDelete(service.id)}}
                         className="flex items-center space-x-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-200 border border-red-600/30 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />

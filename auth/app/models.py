@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer,String,ForeignKey
+from sqlalchemy import Column, Integer,String,ForeignKey,DateTime,Boolean
 from db import Base
+import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -14,3 +15,16 @@ class Service(Base):
     name = Column(String(255), nullable=False)
     api_key = Column(String(255), unique=True, nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    flag = Column(Boolean,default=True)
+
+
+class Aggregate(Base):
+    __tablename__ = "aggregates"
+
+    id = Column(Integer, primary_key=True)
+    service_id = Column(Integer, ForeignKey("services.id"), nullable=False)
+    timestamp = Column(DateTime, nullable=False)
+    log_count = Column(Integer, default=0)
+    error_count = Column(Integer, default=0)
+    critical_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
