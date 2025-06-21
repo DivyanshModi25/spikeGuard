@@ -1,22 +1,23 @@
-from sqlalchemy import Column, Integer,String,ForeignKey,DateTime,Boolean,Float
+from sqlalchemy import Column, Integer,Float, String, DateTime, ForeignKey,func,Boolean
 from db import Base
 import datetime
 
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
-    email = Column(String(255), unique=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
-
 class Service(Base):
     __tablename__ = "services"
+    
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     api_key = Column(String(255), unique=True, nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    flag = Column(Boolean,default=True)
 
+class Log(Base):
+    __tablename__ = "logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    service_id = Column(Integer, index=True)
+    level = Column(String(255))  # INFO / ERROR / WARN
+    message = Column(String(255))
+    timestamp = Column(DateTime, default=func.now())
 
 class AggregatedMetric(Base):
     __tablename__ = "aggregated_metrics"

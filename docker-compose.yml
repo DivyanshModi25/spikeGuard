@@ -75,11 +75,9 @@ services:
       kafka:
         condition: service_healthy
 
-  analyzer_service:
-    build: ./analyzer
-    container_name: analyzer_service
-    ports:
-      - "5002:5000"
+  analyzer_consumer:
+    build: ./analyzer/consumer
+    container_name: analyzer_consumer
     environment:
       - DATABASE_URL=mysql+pymysql://spikeuser:111@mysql/spikeguard
       - KAFKA_BROKER=kafka:9092
@@ -87,6 +85,17 @@ services:
       mysql:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+
+  analyzer_api:
+    build: ./analyzer/api
+    container_name: analyzer_api
+    ports:
+      - "5002:5000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://spikeuser:111@mysql/spikeguard
+    depends_on:
+      mysql:
         condition: service_healthy
 
   
@@ -100,4 +109,4 @@ services:
     depends_on:
       - auth_service
       - ingestion_service
-      - analyzer_service
+      - analyzer_api

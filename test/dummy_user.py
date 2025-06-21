@@ -3,10 +3,10 @@ import random
 import time
 
 # Ingestion API endpoint
-INGESTION_URL = "http://localhost:5001/ingest"  # replace with actual port if different
+INGESTION_URL = "http://localhost/ingest/ingest"  # replace with actual port if different
 
 # Dummy API key (put valid one here after service creation)
-API_KEY = "0d30c6eadf45f2b8a26a5c53430681b0"
+API_KEY = "d3f4ee3c4ee32744a756ad7b273d705f"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]
