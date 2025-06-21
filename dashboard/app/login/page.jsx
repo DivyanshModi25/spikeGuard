@@ -48,7 +48,7 @@ export default function LoginPage() {
           <div>
             <label className="block text-sm text-gray-400 mb-1">Email</label>
             <input
-              {...register("email",{
+              {...register("dev_email",{
                 required: "Email is required",
                 pattern: {
                   value: /^\S+@\S+$/i,

@@ -47,7 +47,7 @@ export default function RegistrationPage() {
           <div>
             <label className="block text-sm text-gray-400 mb-1">Full Name</label>
             <input
-              {...register("name",{required:"Name is required"})}
+              {...register("dev_name",{required:"Name is required"})}
               type="text"
               placeholder="John Doe"
               className="w-full px-4 py-2 bg-[#2c2c2c] text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -59,7 +59,7 @@ export default function RegistrationPage() {
           <div>
             <label className="block text-sm text-gray-400 mb-1">Email</label>
             <input
-              {...register("email",{
+              {...register("dev_email",{
                 required: "Email is required",
                 pattern: {
                   value: /^\S+@\S+$/i,

@@ -38,14 +38,11 @@ export default function Dashboard() {
     setTimeout(() => setCopiedKey(''), 2000);
   };
 
-  // const handleDeleteService = (id) => {
-  //   setServices(services.filter(service => service.id !== id));
-  // };
 
  
   const filteredServices = Array.isArray(serviceList)
   ? serviceList.filter(service =>
-      service.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      service.service_name?.toLowerCase().includes(searchTerm.toLowerCase())
     )
   : [];
 
@@ -75,7 +72,7 @@ export default function Dashboard() {
 
   const handleCreateService=async(data)=>{
     try {
-      const name=data.newService
+      const service_name=data.service_name 
       const res=await fetch('http://localhost/auth/services',{
         method:"POST",
         credentials:'include',
@@ -83,7 +80,7 @@ export default function Dashboard() {
           'content-type':'application/json'
         },
         body:JSON.stringify({
-          "name":name
+          "service_name":service_name
         })
       })
 
@@ -93,8 +90,8 @@ export default function Dashboard() {
       if(res.ok==true)
       {
           setServiceList([...serviceList,{
-            id:resData.id,
-            name:resData.service_name,
+            service_id:resData.service_id,
+            service_name:resData.service_name,
             api_key:resData.api_key,
             flag:true ,
             error_logs:0,
@@ -142,14 +139,14 @@ export default function Dashboard() {
             'content-type':'application/json'
           },
           credentials:'include',
-          body:JSON.stringify({id:service_id})
+          body:JSON.stringify({service_id:service_id})
         })
         const data=await res.json()
         console.log(res,data);
         
         if(res.ok==true)
         {
-            setServiceList(prev => prev.filter(service => service.id !== service_id));
+            setServiceList(prev => prev.filter(service => service.service_id !== service_id));
         }
         
       } catch (error) {
@@ -226,7 +223,7 @@ export default function Dashboard() {
           <form className="flex gap-4" onSubmit={handleSubmit(handleCreateService)}>
             <div className="flex-1 relative" >
               <input
-                {...register("newService")}
+                {...register("service_name")}
                 value={newService}
                 onChange={(e) => setNewService(e.target.value)}
                 type="text"
@@ -267,7 +264,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 gap-6 overflow-y-auto h-[54.6vh] custom-scrollbar px-2">
           {filteredServices.map((service) => service.flag && (
             <div
-              key={service.id}
+              key={service.service_id}
               className="bg-[#111111] h-fit border-1 border-[#222222] rounded-2xl p-10 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#4b4a4a]"
             >
               <div className="flex justify-between">
@@ -277,7 +274,7 @@ export default function Dashboard() {
                       <Globe className="w-6 h-6 text-white" />
                     </div> */}
                     <div className='flex gap-5'>
-                      <h3 className="text-xl font-semibold text-white mb-1">{service.name}</h3>
+                      <h3 className="text-xl font-semibold text-white mb-1">{service.service_name}</h3>
                       <div className="flex items-center space-x-4 text-sm">
                         <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-lg font-medium">
                           "service.category"
@@ -291,7 +288,7 @@ export default function Dashboard() {
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => router.push(`/dashboard/analytics/${service.id}`)}
+                        onClick={() => router.push(`/dashboard/analytics/${service.service_id}`)}
                         className="flex items-center space-x-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-orange-700 hover:to-red-600 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-orange-500/25 cursor-pointer"
                       >
                         <BarChart3 className="w-4 h-4" />
@@ -305,7 +302,7 @@ export default function Dashboard() {
                         <span className='text-[12px]'>View Logs</span>
                       </button>
                       <button
-                        onClick={()=>{handleDelete(service.id)}}
+                        onClick={()=>{handleDelete(service.service_id)}}
                         className="flex items-center space-x-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-200 border border-red-600/30 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
