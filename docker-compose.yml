@@ -98,6 +98,19 @@ services:
       mysql:
         condition: service_healthy
 
+    
+  realtime_gateway:
+    build: ./realtime-gateway
+    container_name: realtime_gateway
+    ports:
+      - "5003:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://spikeuser:111@mysql/spikeguard
+      - KAFKA_BROKER=kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+
   
   nginx:
     image: nginx:latest
