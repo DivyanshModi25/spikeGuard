@@ -29,7 +29,7 @@ def generate_api_key():
     return secrets.token_hex(16)
 
 
-def create_access_token(data, expires_delta=timedelta(hours=1)):
+def create_access_token(data, expires_delta=timedelta(hours=4)):
     to_encode=data.copy()
     expire=datetime.utcnow() + expires_delta
     to_encode.update({"exp":expire})

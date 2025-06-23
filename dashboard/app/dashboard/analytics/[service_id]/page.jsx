@@ -1,10 +1,11 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
-import { ComposedChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,Pie,PieChart,Cell } from 'recharts';
 import Typography from '@mui/material/Typography';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
+import DonutChart from '@/app/components/DonutChart';
 
 export default function ServiceAnalytics() {
   const { service_id } = useParams();
@@ -13,6 +14,7 @@ export default function ServiceAnalytics() {
 
   const [filter, setFilter] = useState("month"); // "month" or "hour"
   const [chartData, setChartData] = useState([]);
+  const [logLevelCount,setLogLevelCount]=useState([])
 
   const fetchData = async () => {
     const endpoint =
@@ -40,6 +42,31 @@ export default function ServiceAnalytics() {
   useEffect(() => {
     fetchData();
   }, [filter]); // Re-fetch on filter change
+
+  useEffect(()=>{
+    const fetch_log_level_count=async()=>{
+      try {
+
+        const res=await fetch('http://localhost/analyze/level_count',{
+          method:"POST",
+          headers:{
+            "content-type":"application/json"
+          },
+          credentials:'include',
+          body:JSON.stringify({service_id:service_id})
+        })
+
+        const data = await res.json()
+        
+        setLogLevelCount(data)
+        
+      } catch (error) {
+        console.log(error);    
+      }
+    }
+
+    fetch_log_level_count()
+  },[])
 
   return (
     <div className='bg-[#4e4e4e31] w-[100vw] h-[100vh] absolute p-5'>
@@ -129,6 +156,11 @@ export default function ServiceAnalytics() {
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
+
+
+      <div className="">
+          <DonutChart data={logLevelCount}/>
       </div>
     </div>
   );

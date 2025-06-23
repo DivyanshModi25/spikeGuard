@@ -1,6 +1,6 @@
 from flask import Flask,request,jsonify
 from db import sessionLocal
-from models import AggregatedMetric,Service
+from models import AggregatedMetric,Service,Log
 from sqlalchemy import func
 from decorator import token_required
 from datetime import datetime,timedelta
@@ -208,6 +208,32 @@ def monthly_traffic():
 
     finally:
         db.close()
+
+
+@app.route('/level_count', methods=['POST'])
+@token_required
+def log_level_count():
+    db=sessionLocal()
+
+    try:
+        data = request.json 
+        service_id = data['service_id']
+
+        if not service_id:
+            return jsonify({'error': 'Missing service_id'}), 400
+
+        results = (
+            db.query(Log.log_level, func.count().label("count"))
+            .filter(Log.service_id == service_id)
+            .group_by(Log.log_level)
+            .all()
+        )
+
+        output = [{"log_level": row.log_level, "count": row.count} for row in results]
+    finally:
+        db.close()
+
+    return jsonify(output), 200
 
 
 if __name__ == "__main__":
