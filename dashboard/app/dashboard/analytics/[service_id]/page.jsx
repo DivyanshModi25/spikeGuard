@@ -52,32 +52,28 @@ export default function ServiceAnalytics() {
         </Breadcrumbs>
       </div>
 
-      
+      {/* Filter */}
+      <div className="flex gap-2 p-3">
+        <button
+          onClick={() => setFilter("month")}
+          className={`px-4 py-2 rounded-lg cursor-pointer ${filter === "month" ? "bg-orange-600 text-white" : "bg-gray-700 text-gray-300"}`}
+        >
+          Monthly
+        </button>
+        <button
+          onClick={() => setFilter("hour")}
+          className={`px-4 py-2 rounded-lg cursor-pointer ${filter === "hour" ? "bg-orange-600 text-white" : "bg-gray-700 text-gray-300"}`}
+        >
+          Hourly
+        </button>
+      </div>
 
       {/* Chart */}
       <div className="">
-        <div className="w-[800px] h-[450px] bg-[#111111] rounded-xl p-6 mt-4 ml-3.5">
-          {/* Filter */}
-          <div className="flex items-center justify-evenly">
-            <div className="flex gap-2 -translate-x-10 -translate-y-5">
-            <button
-              onClick={() => setFilter("month")}
-              className={`px-4 py-2  rounded-lg cursor-pointer ${filter === "month" ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-300"}`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setFilter("hour")}
-              className={`px-4 py-2  rounded-lg cursor-pointer ${filter === "hour" ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-300"}`}
-            >
-              Hourly
-            </button>
-          </div>
-          <div className="-translate-x-5 text-center">
+        <div className="w-[700px] h-[350px] bg-[#111111] border-1 border-[#222222] rounded-xl p-5 mt-4 ml-3.5">
+          <div className="text-center">
             <h2 className="text-white text-xl font-semibold mb-2">{filter.charAt(0).toUpperCase() + filter.slice(1)}ly Log Overview</h2>
             <p className="text-gray-400 text-md mb-4">Total logs vs error logs for each {filter}</p>
-          </div>
-          <div className=""></div>
           </div>
           
           <div className="w-full h-[70%]">
