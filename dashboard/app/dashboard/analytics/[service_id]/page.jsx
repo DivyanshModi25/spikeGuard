@@ -28,7 +28,9 @@ export default function ServiceAnalytics() {
   const [LogLocationSummary,setLogLocationSummary]=useState({
   log_summary: []
 })
-console.log(LogLocationSummary);
+const [totalLogs,setTotalLogs]=useState(0)
+const [errorLogs,setErrorLogs]=useState(0)
+const [errorRate,setErrorRate]=useState(0)
 
 
   const fetchData = async () => {
@@ -106,29 +108,58 @@ console.log(LogLocationSummary);
     const fetch_users_location_data=async()=>{
       try {
 
-        setLogLocationSummary({
-          "log_summary": [
-            {
-              "count": 2,
-              "country": "United States",
-              "latitude": 37.3860517,
-              "longitude": -122.0838511
-            },
-            {
-              "count": 5,
-              "country": "India",
-              "latitude": 19.0759837,
-              "longitude": 72.8776559
-            }
-          ],
-          "service_id": 1
+        const res=await fetch('http://localhost/analyze/metrics/log_locations',{
+          method:"POST",
+          headers:{
+            "content-type":"application/json"
+          },
+          credentials:"include",
+          body:JSON.stringify({service_id:service_id})
         })
+
+        const data=await res.json()
+        console.log(data);
+        
+
+        if(res.ok==true)
+        {
+           setLogLocationSummary(data)
+        }
+
+       
         
       } catch (error) {
         console.log(error);        
       }
     }
 
+    const fetch_total_counts=async()=>{
+      try {
+
+        const res=await fetch('http://localhost/analyze/metrics/total_service_logs',{
+          method:"POST",
+          credentials:"include",
+          headers:{
+            "content-type":"application/json"
+          },
+          body:JSON.stringify({service_id:service_id})
+        })
+
+        const data=await res.json()
+
+        if(res.ok==true)
+        {
+          setTotalLogs(data.total_logs)
+          setErrorLogs(data.error_logs)
+          setErrorRate(data.error_rate)
+        }
+        
+      } catch (error) {
+        console.log(error);        
+      }
+    }
+
+    fetch_total_counts()
     fetch_users_location_data()
     fetch_log_level_count()
     fetch_current_traffic()
@@ -149,6 +180,26 @@ console.log(LogLocationSummary);
       
       <div className="flex">
           <div className="left panel">
+
+            <div className="flex justify-between ml-3 mb-3">
+                  <div className="bg-[#111111] border-1 border-[#222222] w-[220px] p-10 flex flex-col gap-5 items-center rounded-xl">
+                    <p className='text-xl font-semibold'>Total Logs</p>
+                    <p className='text-blue-500'>{totalLogs}</p>
+                  </div>
+
+                  <div className="bg-[#111111] border-1 border-[#222222] w-[220px] p-10 flex flex-col gap-5 items-center rounded-xl">
+                      <p className='text-xl font-semibold'>Error Logs</p>
+                      <p className='text-orange-500'>{errorLogs}</p>
+                  </div>
+
+                  <div className="bg-[#111111] border-1 border-[#222222] w-[220px] p-10 flex flex-col gap-5 items-center rounded-xl">
+                      <p className='text-xl font-semibold'>Error Rate</p>
+                      <p className="text-red-600">
+                        {totalLogs > 0 ? `${((errorLogs / totalLogs) * 100).toFixed(2)}%` : '0.00%'}
+                      </p>
+                  </div>
+            </div>
+
             {/* time series chart */}
             <div className="">
               <div className="w-[700px] h-[350px] bg-[#111111] border-1 border-[#222222] rounded-xl p-5 mt-4 ml-3.5">
@@ -220,10 +271,22 @@ console.log(LogLocationSummary);
                       <Tooltip
                         contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
                         labelStyle={{ color: '#9CA3AF' }}
-                        formatter={(value, name) => {
-                          const label = name === 'total_error_logs' ? 'Error Logs' : 'Total Logs';
-                          return [value, label];
-                        }}
+                        formatter={(value, name, props) => {
+                        const { payload } = props;
+                        const totalLogs = payload.total_logs || 0;
+                        const errorLogs = payload.total_error_logs || 0;
+
+                        if (name === 'total_logs') {
+                          return [value, 'Total Logs'];
+                        } else if (name === 'total_error_logs') {
+                          const errorRate = totalLogs > 0 ? ((errorLogs / totalLogs) * 100).toFixed(2) : '0.00';
+                          return [
+                            `${value} (${errorRate}%)`,
+                            'Error Logs',
+                          ];
+                        }
+                        return [value, name];
+                      }}
                       />
                     </ComposedChart>
                   </ResponsiveContainer>
@@ -253,25 +316,15 @@ console.log(LogLocationSummary);
             </div>
           </div>
         
-          <div className="right panel p-4">
-              <div className="bg-[#111111] border-1 border-[#222222] w-[60vw] h-[600px] flex justify-between rounded-xl p-6">
+          <div className="right panel p-4 pt-0">
+              <div className="bg-[#111111] border-1 border-[#222222] w-[550px] h-[400px] flex justify-between rounded-xl p-6 ">
                   <div className="flex flex-col">
                     <p className='text-xl font-semibold mb-5 text-center'>Users Locations and Log count</p>
-                    <div className="w-[700px] h-[900px] rounded-xl overflow-hidden">
+                    <div className="w-[500px] h-[100%] rounded-xl overflow-hidden">
                         <LogMap data={LogLocationSummary.log_summary}/>
                     </div>
                   </div>
-                  <div className="w-[450px] flex flex-col p-6 ml-5 translate-y-10 h-[90%] overflow-y-scroll custom-scrollbar">
-                      {/* <p className='text-center font-semibold p-6'>Country Count</p> */}
-                      {LogLocationSummary.log_summary.map((loc)=>{
-                          return(
-                            <div className='flex justify-between m-3'>
-                                <p>{loc.country}</p>
-                                <p>{loc.count}</p>
-                            </div>
-                          )
-                      })}
-                  </div>
+                  
               </div>
           </div>
       </div>

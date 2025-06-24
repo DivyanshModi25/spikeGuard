@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
 
 export default function LogMap({ data }) {
   return (
-    <div style={{ height: '100%', width: '100%' ,borderRadius:"500px"}}>
+    <div style={{ height: '100%', width: '100%'}}>
       <MapContainer center={[20, 0]} zoom={2} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
