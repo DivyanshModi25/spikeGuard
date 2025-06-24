@@ -1,11 +1,13 @@
 from flask import Flask,request,jsonify
 from db import sessionLocal
 from models import AggregatedMetric,Service,Log
-from sqlalchemy import func
+from sqlalchemy import func,case
 from decorator import token_required
 from datetime import datetime,timedelta
 import pytz
 from dateutil.relativedelta import relativedelta
+from utils import get_ip_location
+from collections import defaultdict
 
 app = Flask(__name__)
 
@@ -118,11 +120,11 @@ def hourly_traffic():
 
         # Current time floored to the current hour
         tz = pytz.timezone("Asia/Kolkata")
-        now = datetime.now(tz).replace(minute=0, second=0, microsecond=0)
-        start_time = now - timedelta(hours=24)
+        now = datetime.now(tz).replace()
+        start_time = now - relativedelta(hours=24)
 
         # Step 1: Generate exact 24 hourly slots from start_time to (now - 1 hour)
-        all_hours = [(start_time + timedelta(hours=i)).strftime("%Y-%m-%d %H:00:00") for i in range(25)]
+        all_hours = [(start_time + relativedelta(hours=i)).strftime("%Y-%m-%d %H:00:00") for i in range(25)]
 
         # Step 2: Query the logs
         rows = db.query(
@@ -234,6 +236,137 @@ def log_level_count():
         db.close()
 
     return jsonify(output), 200
+
+
+@app.route('/traffic-meter',methods=['POST'])
+@token_required
+def traffic_meter():
+
+    db=sessionLocal()
+
+    data=request.json
+    service_id=data['service_id']
+
+    if service_id is None:
+        return jsonify({"error": "service_id is required"}), 400
+
+    tz = pytz.timezone("Asia/Kolkata")
+    now = datetime.now(tz)
+    five_minutes_ago = now - relativedelta(minutes=5)
+
+    print("Now:", now)
+    print("Five minutes ago:", five_minutes_ago)
+
+    count = db.query(func.count(Log.log_id))\
+        .filter(Log.timestamp >= five_minutes_ago)\
+        .filter(Log.service_id == service_id)\
+        .scalar()
+    
+    print(count)
+
+    # Optional: Normalize to percentage
+    # e.g., high traffic ~ 500+ logs in 5 min
+    MAX_THRESHOLD = 500
+    percentage = min((count / MAX_THRESHOLD) * 100, 100)
+
+    return jsonify({
+        "count": count,
+        "percentage": round(percentage, 2)
+    })
+
+
+@app.route("/metrics/total_service_logs",methods=['POST'])
+@token_required
+def total_service_logs():
+    db = sessionLocal()
+
+    data = request.get_json()
+    service_id = data['service_id']
+    
+    result = (
+        db.query(
+            func.count().label("total_logs"),
+            func.sum(
+                case(
+                    (Log.log_level == 'ERROR', 1),
+                    else_=0
+                )
+            ).label("error_logs")
+        )
+        .filter(Log.service_id == service_id)  # ✅ use .filter not .filter_by
+        .one()
+    )
+
+    total_logs = result.total_logs
+    error_logs = result.error_logs
+    error_rate = (error_logs / total_logs)*100 if total_logs else 0
+
+    return jsonify({
+        "service_id": service_id,
+        "total_logs": total_logs,
+        "error_logs": error_logs,
+        "error_rate": error_rate
+    })
+
+
+@app.route("/metrics/log_locations", methods=["POST"])
+@token_required
+def log_locations():
+    db = sessionLocal()
+    try:
+        data = request.get_json()
+        service_id = data['service_id']
+
+        # Step 1: Query all dev_ip counts at once
+        ip_counts = (
+            db.query(Log.dev_ip, func.count().label("log_count"))
+            .filter_by(service_id=service_id)
+            .group_by(Log.dev_ip)
+            .all()
+        )
+
+        # Step 2: Prepare mapping for IP -> log_count
+        ip_log_map = {ip: count for ip, count in ip_counts}
+        unique_ips = list(ip_log_map.keys())
+
+        # Step 3: Initialize aggregators
+        country_log_counts = defaultdict(int)
+        country_locations = {}
+
+        # Step 4: Geolocate each IP and aggregate
+        for ip in unique_ips:
+            location = get_ip_location(ip)
+            if location:
+                country = location["country"]
+                ip_count = ip_log_map[ip]
+
+                country_log_counts[country] += ip_count
+
+                # Save location only once per country
+                if country not in country_locations:
+                    country_locations[country] = {
+                        "latitude": location["latitude"],
+                        "longitude": location["longitude"]
+                    }
+
+        # Step 5: Format response
+        result = [
+            {
+                "country": country,
+                "count": count,
+                "latitude": country_locations[country]["latitude"],
+                "longitude": country_locations[country]["longitude"]
+            }
+            for country, count in country_log_counts.items()
+        ]
+
+        return jsonify({
+            "service_id": service_id,
+            "log_summary": result
+        })
+
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":

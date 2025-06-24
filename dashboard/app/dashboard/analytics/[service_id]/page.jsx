@@ -7,6 +7,15 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import DonutChart from '@/app/components/DonutChart';
 
+import dynamic from 'next/dynamic';
+
+const LogMap = dynamic(() => import('@/app/components/LogMap'), {
+  ssr: false, // Disable Server Side Rendering for Leaflet
+});
+const TrafficMeter = dynamic(() => import('@/app/components/TrafficMeter'), {
+  ssr: false,
+});
+
 export default function ServiceAnalytics() {
   const { service_id } = useParams();
   const searchParams = useSearchParams();
@@ -15,6 +24,12 @@ export default function ServiceAnalytics() {
   const [filter, setFilter] = useState("month"); // "month" or "hour"
   const [chartData, setChartData] = useState([]);
   const [logLevelCount,setLogLevelCount]=useState([])
+  const [currentTrafficData,setCurrentTrafficData]=useState({})
+  const [LogLocationSummary,setLogLocationSummary]=useState({
+  log_summary: []
+})
+console.log(LogLocationSummary);
+
 
   const fetchData = async () => {
     const endpoint =
@@ -31,7 +46,7 @@ export default function ServiceAnalytics() {
       });
 
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok==true) {
         setChartData(data);
       }
     } catch (error) {
@@ -65,7 +80,59 @@ export default function ServiceAnalytics() {
       }
     }
 
+    const fetch_current_traffic=async()=>{
+      try {
+        const res=await fetch('http://localhost/analyze/traffic-meter',{
+          method:"POST",
+          credentials:'include',
+          headers:{
+            'content-type':'application/json'
+          },
+          body:JSON.stringify({service_id:service_id})
+        })
+
+        const data=await res.json()
+        console.log(data);
+        if(res.ok==true)
+          {
+            setCurrentTrafficData(data)
+          }
+        
+      } catch (error) {
+        console.log(error);        
+      }
+    }
+
+    const fetch_users_location_data=async()=>{
+      try {
+
+        setLogLocationSummary({
+          "log_summary": [
+            {
+              "count": 2,
+              "country": "United States",
+              "latitude": 37.3860517,
+              "longitude": -122.0838511
+            },
+            {
+              "count": 5,
+              "country": "India",
+              "latitude": 19.0759837,
+              "longitude": 72.8776559
+            }
+          ],
+          "service_id": 1
+        })
+        
+      } catch (error) {
+        console.log(error);        
+      }
+    }
+
+    fetch_users_location_data()
     fetch_log_level_count()
+    fetch_current_traffic()
+
   },[])
 
   return (
@@ -79,88 +146,134 @@ export default function ServiceAnalytics() {
         </Breadcrumbs>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-2 p-3">
-        <button
-          onClick={() => setFilter("month")}
-          className={`px-4 py-2 rounded-lg cursor-pointer ${filter === "month" ? "bg-orange-600 text-white" : "bg-gray-700 text-gray-300"}`}
-        >
-          Monthly
-        </button>
-        <button
-          onClick={() => setFilter("hour")}
-          className={`px-4 py-2 rounded-lg cursor-pointer ${filter === "hour" ? "bg-orange-600 text-white" : "bg-gray-700 text-gray-300"}`}
-        >
-          Hourly
-        </button>
-      </div>
+      
+      <div className="flex">
+          <div className="left panel">
+            {/* time series chart */}
+            <div className="">
+              <div className="w-[700px] h-[350px] bg-[#111111] border-1 border-[#222222] rounded-xl p-5 mt-4 ml-3.5">
+                
+                <div className="flex items-center">
+                    {/* Filter */}
+                    <div className="flex gap-2 p-3 -translate-x-4 -translate-y-5">
+                      <button
+                        onClick={() => setFilter("month")}
+                        className={`px-2 py-1 rounded-lg cursor-pointer ${filter === "month" ? "bg-orange-600 text-white" : "bg-gray-700 text-gray-300"}`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        onClick={() => setFilter("hour")}
+                        className={`px-2 py-1 rounded-lg cursor-pointer ${filter === "hour" ? "bg-orange-600 text-white" : "bg-gray-700 text-gray-300"}`}
+                      >
+                        Hourly
+                      </button>
+                    </div>
+                    <div className="text-center translate-x-14">
+                      <h2 className="text-white text-xl font-semibold mb-2">{filter.charAt(0).toUpperCase() + filter.slice(1)}ly Log Overview</h2>
+                      <p className="text-gray-400 text-md mb-4">Total logs vs error logs for each {filter}</p>
+                    </div>
+                </div>
+                
+                
+                <div className="w-full h-[70%]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6366F1" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#6366F1" stopOpacity={0.05} />
+                        </linearGradient>
+                        <linearGradient id="pinkGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#EC4899" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#EC4899" stopOpacity={0.05} />
+                        </linearGradient>
+                      </defs>
 
-      {/* Chart */}
-      <div className="">
-        <div className="w-[700px] h-[350px] bg-[#111111] border-1 border-[#222222] rounded-xl p-5 mt-4 ml-3.5">
-          <div className="text-center">
-            <h2 className="text-white text-xl font-semibold mb-2">{filter.charAt(0).toUpperCase() + filter.slice(1)}ly Log Overview</h2>
-            <p className="text-gray-400 text-md mb-4">Total logs vs error logs for each {filter}</p>
+                      <XAxis 
+                        dataKey={filter === "month" ? "month" : "hour"} 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fill: '#9CA3AF', fontSize: 12 }} 
+                        label={{ value: filter === "month" ? "Month" : "Hour", position: "insideBottom", offset: -5, fill: '#9CA3AF' }}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fill: '#9CA3AF', fontSize: 12 }} 
+                        label={{ value: 'Log Count', angle: -90, position: 'insideLeft', fill: '#9CA3AF', offset: 10 }}
+                      />
+
+                      <Area 
+                        dataKey="total_logs" 
+                        stroke="#6366F1" 
+                        strokeWidth={2} 
+                        fill="url(#blueGradient)" 
+                      />
+                      <Area 
+                        dataKey="total_error_logs" 
+                        stroke="#EC4899" 
+                        strokeWidth={2} 
+                        fill="url(#pinkGradient)" 
+                      />
+
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                        labelStyle={{ color: '#9CA3AF' }}
+                        formatter={(value, name) => {
+                          const label = name === 'total_error_logs' ? 'Error Logs' : 'Total Logs';
+                          return [value, label];
+                        }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            
+            {/* donut and meter chart */}
+            <div className="flex items-center">
+              {/* donut chart */}
+              <div className="">
+                  <DonutChart data={logLevelCount}/>
+              </div>
+
+              {/* traffic meter */}
+              <div className="flex flex-col justify-center items-center bg-[#111111] w-[380px] h-[320px] rounded-xl border-1 border-[#222222]">
+                <h1 className='text-xl font-semibold text-white'>Traffic Rate</h1>
+                <p className='text-[#999999]'>(last 5 minutes)</p>
+                <TrafficMeter current_traffic_data={currentTrafficData}/>
+                {typeof currentTrafficData.percentage === 'number' && typeof currentTrafficData.count === 'number' && (
+                  <div className="-translate-y-5 text-center">
+                    <p>{currentTrafficData.percentage}%</p>
+                    <p>{currentTrafficData.count} logs</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-          
-          <div className="w-full h-[70%]">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366F1" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#6366F1" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="pinkGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#EC4899" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#EC4899" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-
-                <XAxis 
-                  dataKey={filter === "month" ? "month" : "hour"} 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#9CA3AF', fontSize: 12 }} 
-                  label={{ value: filter === "month" ? "Month" : "Hour", position: "insideBottom", offset: -5, fill: '#9CA3AF' }}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#9CA3AF', fontSize: 12 }} 
-                  label={{ value: 'Log Count', angle: -90, position: 'insideLeft', fill: '#9CA3AF', offset: 10 }}
-                />
-
-                <Area 
-                  dataKey="total_logs" 
-                  stroke="#6366F1" 
-                  strokeWidth={2} 
-                  fill="url(#blueGradient)" 
-                />
-                <Area 
-                  dataKey="total_error_logs" 
-                  stroke="#EC4899" 
-                  strokeWidth={2} 
-                  fill="url(#pinkGradient)" 
-                />
-
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
-                  labelStyle={{ color: '#9CA3AF' }}
-                  formatter={(value, name) => {
-                    const label = name === 'total_error_logs' ? 'Error Logs' : 'Total Logs';
-                    return [value, label];
-                  }}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
+        
+          <div className="right panel p-4">
+              <div className="bg-[#111111] border-1 border-[#222222] w-[60vw] h-[600px] flex justify-between rounded-xl p-6">
+                  <div className="flex flex-col">
+                    <p className='text-xl font-semibold mb-5 text-center'>Users Locations and Log count</p>
+                    <div className="w-[700px] h-[900px] rounded-xl overflow-hidden">
+                        <LogMap data={LogLocationSummary.log_summary}/>
+                    </div>
+                  </div>
+                  <div className="w-[450px] flex flex-col p-6 ml-5 translate-y-10 h-[90%] overflow-y-scroll custom-scrollbar">
+                      {/* <p className='text-center font-semibold p-6'>Country Count</p> */}
+                      {LogLocationSummary.log_summary.map((loc)=>{
+                          return(
+                            <div className='flex justify-between m-3'>
+                                <p>{loc.country}</p>
+                                <p>{loc.count}</p>
+                            </div>
+                          )
+                      })}
+                  </div>
+              </div>
           </div>
-        </div>
-      </div>
-
-
-      <div className="">
-          <DonutChart data={logLevelCount}/>
       </div>
     </div>
   );
