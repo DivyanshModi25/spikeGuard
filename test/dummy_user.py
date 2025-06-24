@@ -7,7 +7,7 @@ import pytz
 INGESTION_URL = "http://localhost/ingest/ingest"  # replace with actual port if different
 
 # Dummy API key (put valid one here after service creation)
-API_KEY = "34b5a10621048b08818c52ff886e9fb3"
+API_KEY = "bc825bc457ac028e096ca8b8750cff8b"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]

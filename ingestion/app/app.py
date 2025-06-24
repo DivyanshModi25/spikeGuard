@@ -36,7 +36,7 @@ def ingest_log():
 
         if 'meta' not in data:
             data['meta'] = {
-                'dev_ip' : request.headers.get('X-Forwarded-For', request.remote_addr)
+                'user_ip' : request.headers.get('X-Forwarded-For', request.remote_addr)
             }
 
         # Send to Kafka

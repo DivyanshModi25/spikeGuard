@@ -8,8 +8,10 @@ import requests
 
 app=Flask(__name__)
 
-# Auto create tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except sqlalchemy.exc.OperationalError as e:
+    print(f"Skipping table creation: {e}")
 
 @app.route("/health")
 def health():

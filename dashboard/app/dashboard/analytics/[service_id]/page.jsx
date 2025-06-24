@@ -8,6 +8,7 @@ import Link from '@mui/material/Link';
 import DonutChart from '@/app/components/DonutChart';
 
 import dynamic from 'next/dynamic';
+import LogsPanel from '@/app/components/LogsPanel';
 
 const LogMap = dynamic(() => import('@/app/components/LogMap'), {
   ssr: false, // Disable Server Side Rendering for Leaflet
@@ -178,7 +179,7 @@ const [errorRate,setErrorRate]=useState(0)
       </div>
 
       
-      <div className="flex">
+      <div className="flex mt-3">
           <div className="left panel">
 
             <div className="flex justify-between ml-3 mb-3">
@@ -316,7 +317,7 @@ const [errorRate,setErrorRate]=useState(0)
             </div>
           </div>
         
-          <div className="right panel p-4 pt-0">
+          <div className="right panel p-4 pt-0 flex flex-col">
               <div className="bg-[#111111] border-1 border-[#222222] w-[550px] h-[400px] flex justify-between rounded-xl p-6 ">
                   <div className="flex flex-col">
                     <p className='text-xl font-semibold mb-5 text-center'>Users Locations and Log count</p>
@@ -326,6 +327,7 @@ const [errorRate,setErrorRate]=useState(0)
                   </div>
                   
               </div>
+              <LogsPanel/>
           </div>
       </div>
     </div>

@@ -19,7 +19,7 @@ class Log(Base):
     message = Column(String(255))
     timestamp = Column(DateTime, default=func.now())
     api_key=Column(String(255))
-    dev_ip=Column(String(20))
+    user_ip=Column(String(20))
 
 class AggregatedMetric(Base):
     __tablename__ = "aggregated_metrics"

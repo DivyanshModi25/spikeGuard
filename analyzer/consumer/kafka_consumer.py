@@ -37,7 +37,7 @@ for message in consumer:
             message=data['message'],
             timestamp=datetime.fromisoformat(data['timestamp']),
             api_key=data['api_key'],
-            dev_ip=data['meta']['dev_ip']
+            user_ip=data['meta']['user_ip']
         )
 
         db.add(log_entry)

@@ -244,35 +244,38 @@ def traffic_meter():
 
     db=sessionLocal()
 
-    data=request.json
-    service_id=data['service_id']
+    try:
+        data=request.json
+        service_id=data['service_id']
 
-    if service_id is None:
-        return jsonify({"error": "service_id is required"}), 400
+        if service_id is None:
+            return jsonify({"error": "service_id is required"}), 400
 
-    tz = pytz.timezone("Asia/Kolkata")
-    now = datetime.now(tz)
-    five_minutes_ago = now - relativedelta(minutes=5)
+        tz = pytz.timezone("Asia/Kolkata")
+        now = datetime.now(tz)
+        five_minutes_ago = now - relativedelta(minutes=5)
 
-    print("Now:", now)
-    print("Five minutes ago:", five_minutes_ago)
+        print("Now:", now)
+        print("Five minutes ago:", five_minutes_ago)
 
-    count = db.query(func.count(Log.log_id))\
-        .filter(Log.timestamp >= five_minutes_ago)\
-        .filter(Log.service_id == service_id)\
-        .scalar()
-    
-    print(count)
+        count = db.query(func.count(Log.log_id))\
+            .filter(Log.timestamp >= five_minutes_ago)\
+            .filter(Log.service_id == service_id)\
+            .scalar()
+        
+        print(count)
 
-    # Optional: Normalize to percentage
-    # e.g., high traffic ~ 500+ logs in 5 min
-    MAX_THRESHOLD = 500
-    percentage = min((count / MAX_THRESHOLD) * 100, 100)
+        # Optional: Normalize to percentage
+        # e.g., high traffic ~ 500+ logs in 5 min
+        MAX_THRESHOLD = 500
+        percentage = min((count / MAX_THRESHOLD) * 100, 100)
 
-    return jsonify({
-        "count": count,
-        "percentage": round(percentage, 2)
-    })
+        return jsonify({
+            "count": count,
+            "percentage": round(percentage, 2)
+        })
+    finally:
+        db.close()
 
 
 @app.route("/metrics/total_service_logs",methods=['POST'])
@@ -280,33 +283,36 @@ def traffic_meter():
 def total_service_logs():
     db = sessionLocal()
 
-    data = request.get_json()
-    service_id = data['service_id']
-    
-    result = (
-        db.query(
-            func.count().label("total_logs"),
-            func.sum(
-                case(
-                    (Log.log_level == 'ERROR', 1),
-                    else_=0
-                )
-            ).label("error_logs")
+    try:
+        data = request.get_json()
+        service_id = data['service_id']
+        
+        result = (
+            db.query(
+                func.count().label("total_logs"),
+                func.sum(
+                    case(
+                        (Log.log_level == 'ERROR', 1),
+                        else_=0
+                    )
+                ).label("error_logs")
+            )
+            .filter(Log.service_id == service_id)  # ✅ use .filter not .filter_by
+            .one()
         )
-        .filter(Log.service_id == service_id)  # ✅ use .filter not .filter_by
-        .one()
-    )
 
-    total_logs = result.total_logs
-    error_logs = result.error_logs
-    error_rate = (error_logs / total_logs)*100 if total_logs else 0
+        total_logs = result.total_logs
+        error_logs = result.error_logs
+        error_rate = (error_logs / total_logs)*100 if total_logs else 0
 
-    return jsonify({
-        "service_id": service_id,
-        "total_logs": total_logs,
-        "error_logs": error_logs,
-        "error_rate": error_rate
-    })
+        return jsonify({
+            "service_id": service_id,
+            "total_logs": total_logs,
+            "error_logs": error_logs,
+            "error_rate": error_rate
+        })
+    finally:
+        db.close()
 
 
 @app.route("/metrics/log_locations", methods=["POST"])
@@ -317,11 +323,11 @@ def log_locations():
         data = request.get_json()
         service_id = data['service_id']
 
-        # Step 1: Query all dev_ip counts at once
+        # Step 1: Query all user_ip counts at once
         ip_counts = (
-            db.query(Log.dev_ip, func.count().label("log_count"))
+            db.query(Log.user_ip, func.count().label("log_count"))
             .filter_by(service_id=service_id)
-            .group_by(Log.dev_ip)
+            .group_by(Log.user_ip)
             .all()
         )
 
