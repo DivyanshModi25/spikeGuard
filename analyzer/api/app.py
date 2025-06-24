@@ -1,4 +1,4 @@
-from flask import Flask,request,jsonify
+from flask import Flask,request,jsonify,send_file
 from db import sessionLocal
 from models import AggregatedMetric,Service,Log
 from sqlalchemy import func,case
@@ -8,6 +8,8 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from utils import get_ip_location
 from collections import defaultdict
+import csv
+from io import StringIO,BytesIO
 
 app = Flask(__name__)
 
@@ -373,6 +375,83 @@ def log_locations():
 
     finally:
         db.close()
+
+
+@app.route('/display_top_logs', methods=['POST'])
+def get_top_logs():
+    db = sessionLocal()
+    results = {}
+
+    try:
+        data=request.json
+        service_id=data['service_id']
+        for level in ['ERROR', 'CRITICAL', 'INFO', 'WARNING','DEBUG']:
+            logs = (
+                db.query(Log)
+                .filter(Log.log_level == level)
+                .filter(Log.service_id == service_id)
+                .order_by(Log.timestamp.desc())
+                .limit(10)
+                .all()
+            )
+            results[level] = [
+                {
+                    "log_id": log.log_id,
+                    "timestamp": log.timestamp.isoformat(),
+                    "message": log.message,
+                    "log_level":log.log_level,
+                    "user_ip":log.user_ip
+                } for log in logs
+            ]
+        return jsonify(results)
+
+    finally:
+        db.close()
+
+
+@app.route('/download_logs', methods=['POST'])
+def download_logs():
+    db = sessionLocal()
+
+    try:
+        # Params
+        data=request.json 
+        service_id=data['service_id']
+        start = data["start_time"]
+        end = data["end_time"]
+        log_level = data["log_level"]
+
+        # Parse dates
+        start_dt = datetime.fromisoformat(start)
+        end_dt = datetime.fromisoformat(end)
+
+        query = db.query(Log).filter(Log.timestamp.between(start_dt, end_dt))
+        if log_level != "ALL":
+            query = query.filter(Log.log_level == log_level)
+
+        logs = query.order_by(Log.timestamp.desc()).all()
+
+        # Generate CSV in memory
+        si = StringIO()
+        writer = csv.writer(si)
+        writer.writerow(["ID", "Timestamp", "Level", "Message","user ip"])
+        for log in logs:
+            writer.writerow([log.log_id, log.timestamp, log.log_level, log.message,log.user_ip])
+
+        byte_io = BytesIO()
+        byte_io.write(si.getvalue().encode('utf-8'))
+        byte_io.seek(0)
+
+        return send_file(
+            byte_io,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'filtered_logs_{service_id}.csv'
+        )
+
+    finally:
+        db.close()
+
 
 
 if __name__ == "__main__":

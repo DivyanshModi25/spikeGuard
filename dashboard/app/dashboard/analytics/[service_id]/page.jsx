@@ -8,7 +8,7 @@ import Link from '@mui/material/Link';
 import DonutChart from '@/app/components/DonutChart';
 
 import dynamic from 'next/dynamic';
-import LogsPanel from '@/app/components/LogsPanel';
+import LogsDisplayPanel from '@/app/components/LogsDisplayPanel';
 
 const LogMap = dynamic(() => import('@/app/components/LogMap'), {
   ssr: false, // Disable Server Side Rendering for Leaflet
@@ -32,6 +32,7 @@ export default function ServiceAnalytics() {
 const [totalLogs,setTotalLogs]=useState(0)
 const [errorLogs,setErrorLogs]=useState(0)
 const [errorRate,setErrorRate]=useState(0)
+const [allLogs,setAllLogs]=useState({})
 
 
   const fetchData = async () => {
@@ -160,7 +161,32 @@ const [errorRate,setErrorRate]=useState(0)
       }
     }
 
+    const fetch_all_logs=async()=>{
+      try {
+
+        const res=await fetch('http://localhost/analyze/display_top_logs',{
+          method:"POST",
+          headers:{
+            "content-type":"application/json"
+          },
+          credentials:"include",
+          body:JSON.stringify({service_id:service_id})
+        })
+
+        const data=await res.json()
+
+        if(res.ok==true)
+        {
+            setAllLogs(data)
+        }
+        
+      } catch (error) {
+          console.log(error);          
+      }
+    }
+
     fetch_total_counts()
+    fetch_all_logs()
     fetch_users_location_data()
     fetch_log_level_count()
     fetch_current_traffic()
@@ -327,7 +353,7 @@ const [errorRate,setErrorRate]=useState(0)
                   </div>
                   
               </div>
-              <LogsPanel/>
+              <LogsDisplayPanel data={allLogs}/>
           </div>
       </div>
     </div>
