@@ -20,7 +20,7 @@ export default function LogsDisplayPanel({data,service_id}) {
       .toISOString()
       .slice(0, 16);
 
-   const { register, handleSubmit, watch ,control} = useForm({
+   const {handleSubmit ,control} = useForm({
     defaultValues: {
       startDate: toDateTimeLocal(now),
       endDate: toDateTimeLocal(now),
@@ -28,8 +28,6 @@ export default function LogsDisplayPanel({data,service_id}) {
     }
   });
 
-  const watchStart = watch('startDate');
-  const watchEnd = watch('endDate');
 
   const [currentTab,setCurrentTab]=useState(0)
 
@@ -66,15 +64,9 @@ export default function LogsDisplayPanel({data,service_id}) {
   };
 
 
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedOptions, setSelectedOptions] = useState([]);
 
   const options = ['INFO', 'ERROR', 'WARNING', 'CRITICAL', 'DEBUG'];
 
-  const handleMultiChange = (event) => {
-    const value = event.target.value;
-    setSelectedOptions(typeof value === 'string' ? value.split(',') : value);
-  };
 
 
   const generateCSV=async(data)=>{
@@ -106,7 +98,6 @@ export default function LogsDisplayPanel({data,service_id}) {
 
         const url = window.URL.createObjectURL(blob);
 
-        console.log(res,url);
         
         
       } catch (error) {
