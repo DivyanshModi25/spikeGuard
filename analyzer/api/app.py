@@ -419,17 +419,21 @@ def download_logs():
         service_id=data['service_id']
         start = data["start_time"]
         end = data["end_time"]
-        log_level = data["log_level"]
+        log_levels = data.get("log_level", [])
 
         # Parse dates
         start_dt = datetime.fromisoformat(start)
         end_dt = datetime.fromisoformat(end)
 
-        query = db.query(Log).filter(Log.timestamp.between(start_dt, end_dt))
-        if log_level != "ALL":
-            query = query.filter(Log.log_level == log_level)
-
-        logs = query.order_by(Log.timestamp.desc()).all()
+        logs = (
+                    db.query(Log)
+                    .filter(
+                        Log.timestamp.between(start_dt, end_dt),
+                        Log.log_level.in_(log_levels)
+                    )
+                    .order_by(Log.timestamp.desc())
+                    .all()
+                )
 
         # Generate CSV in memory
         si = StringIO()
