@@ -353,7 +353,7 @@ const [allLogs,setAllLogs]=useState({})
                   </div>
                   
               </div>
-              <LogsDisplayPanel data={allLogs}/>
+              <LogsDisplayPanel data={allLogs} service_id={service_id}/>
           </div>
       </div>
     </div>

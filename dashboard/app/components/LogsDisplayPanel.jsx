@@ -1,6 +1,35 @@
 import React, { useEffect, useState } from 'react'
+import { TextField, MenuItem, Checkbox, ListItemText, Select, InputLabel, FormControl } from '@mui/material';
+import { useForm ,Controller} from 'react-hook-form';
 
-export default function LogsDisplayPanel({data}) {
+const formatDateTime = (dateString) => {
+  const date = new Date(dateString);
+  const pad = (n) => String(n).padStart(2, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+         `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
+
+
+export default function LogsDisplayPanel({data,service_id}) {
+
+  const now = new Date();
+  const toDateTimeLocal = (date) =>
+    new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
+
+   const { register, handleSubmit, watch ,control} = useForm({
+    defaultValues: {
+      startDate: toDateTimeLocal(now),
+      endDate: toDateTimeLocal(now),
+      log_levels: [],
+    }
+  });
+
+  const watchStart = watch('startDate');
+  const watchEnd = watch('endDate');
 
   const [currentTab,setCurrentTab]=useState(0)
 
@@ -37,8 +66,59 @@ export default function LogsDisplayPanel({data}) {
   };
 
 
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState([]);
+
+  const options = ['INFO', 'ERROR', 'WARNING', 'CRITICAL', 'DEBUG'];
+
+  const handleMultiChange = (event) => {
+    const value = event.target.value;
+    setSelectedOptions(typeof value === 'string' ? value.split(',') : value);
+  };
+
+
+  const generateCSV=async(data)=>{
+      try {
+        console.log(data);
+        
+        const payload = {
+          service_id: service_id,
+          start_time: formatDateTime(data.startDate),
+          end_time: formatDateTime(data.endDate),
+          log_level: data.log_levels
+        };
+
+        const res=await fetch('http://localhost/analyze/download_logs',{
+            method:"POST",
+            headers:{
+              "content-type":"application/json",
+              'Accept': 'text/csv'
+            },
+            credentials:"include",
+            body:JSON.stringify(payload)
+        })
+
+        console.log(payload);
+        
+        
+
+        const blob = await res.blob();
+
+        const url = window.URL.createObjectURL(blob);
+
+        console.log(res,url);
+        
+        
+      } catch (error) {
+        console.log(error);
+        
+      }
+      
+  }
+
+
   return (
-    <div className="bg-[#111111] w-[60vw] h-[46vh] rounded-xl border-1 border-[#222222] flex mt-3 overflow-hidden">
+    <div className="bg-[#111111] w-[60vw] h-[46vh] rounded-xl border-1 border-[#222222] flex mt-3 overflow-hidden flex">
         <div className="left w-[170px] h-[100%] bg-[#000000]  flex flex-col justify-between items-center">
             <div className="w-[100%]">
                 <button className={` w-[100%] p-5 ${currentTab==0?"bg-orange-600":"bg-[#000000]"} cursor-pointer`} onClick={()=>{setCurrentTab(0)}}>Info Logs</button>
@@ -50,42 +130,109 @@ export default function LogsDisplayPanel({data}) {
             </div>
         </div>
         <div className="right p-5 w-[100%] custom-scrollbar">
-            {currentTab!=5 && displayLogData()}
+            {currentTab!=5 && displayLogData(generateCSV)}
             {currentTab==5 && (
-                <div>
-                    <form>
-                        {/* <div className="bg-gray-900 p-4 rounded-xl shadow-lg w-full max-w-sm text-white space-y-4">
-                            <div>
-                              <label className="text-sm text-gray-400">From</label>
-                              <Calendar selected={fromDate} onSelect={setFromDate} mode="single" className="bg-gray-800" />
-                            </div>
-                            <div>
-                              <label className="text-sm text-gray-400">To</label>
-                              <Calendar selected={toDate} onSelect={setToDate} mode="single" className="bg-gray-800" />
-                            </div>
-                            <div>
-                              <label className="text-sm text-gray-400">Log Types</label>
-                              <MultiSelect
-                                options={logOptions}
-                                selected={logTypes}
-                                onChange={setLogTypes}
-                                className="bg-gray-800"
+                <div className='w-[60%] mx-auto mt-10'>
+                    <form onSubmit={handleSubmit(generateCSV)}>
+                          <div className="flex gap-9">
+                            <div className="flex flex-col w-[100%]">
+                              <label className="text-[#666666] text-sm mb-2">Start Time</label>
+                              <Controller
+                                name="startDate"
+                                control={control}
+                                render={({ field }) => (
+                                  <input
+                                    type="datetime-local"
+                                    {...field}
+                                    style={{
+                                      backgroundColor: '#222222',
+                                      color: 'gray',
+                                      padding: '10px',
+                                      borderRadius: '8px',
+                                      fontSize: '16px',
+                                    }}
+                                  />
+                                )}
                               />
                             </div>
-                            <div>
-                              {!fileUrl ? (
-                                <Button className="bg-orange-600 hover:bg-orange-700 w-full" onClick={handleGenerate} disabled={isGenerating}>
-                                  {isGenerating ? "Generating..." : "Generate"}
-                                </Button>
-                              ) : (
-                                <a href={fileUrl} download>
-                                  <Button className="bg-green-600 hover:bg-green-700 w-full">
-                                    Download
-                                  </Button>
-                                </a>
-                              )}
+                            
+                            <div className="flex flex-col w-[100%]">
+                              <label className="text-[#666666] text-sm mb-2">End Time</label>
+                              <Controller
+                                name="endDate"
+                                control={control}
+                                render={({ field }) => (
+                                  <input
+                                    type="datetime-local"
+                                    {...field}
+                                    style={{
+                                      backgroundColor: '#222222',
+                                      color: 'gray',
+                                      padding: '10px',
+                                      borderRadius: '8px',
+                                      fontSize: '16px',
+                                    }}
+                                  />
+                                )}
+                              />
                             </div>
-                          </div> */}
+                          </div>
+
+                          <FormControl fullWidth sx={{ backgroundColor: '#222222', borderRadius: 2, mt: 5 }}>
+                            <InputLabel sx={{ color: '#ffffff' }}>Log Levels</InputLabel>
+                            <Controller
+                              name="log_levels"
+                              control={control}
+                              render={({ field }) => (
+                                <Select
+                                  multiple
+                                  {...field}
+                                  renderValue={(selected) => selected.join(', ')}
+                                  sx={{
+                                    minWidth: 250,
+                                    backgroundColor: '#222222',
+                                    color: 'white',
+                                    borderRadius: 2,
+                                    '& .MuiSelect-icon': { color: '#ffffff' },
+                                  }}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        bgcolor: '#1e1e1e',
+                                        color: 'white',
+                                        '& .MuiMenuItem-root': {
+                                          '&:hover': {
+                                            bgcolor: '#333333',
+                                          },
+                                          '&.Mui-selected': {
+                                            bgcolor: '#f54a00',
+                                            color: '#000000',
+                                            '&:hover': {
+                                              bgcolor: '#f54a00',
+                                            },
+                                          },
+                                        },
+                                      },
+                                    },
+                                  }}
+                                >
+                                  {options.map((name) => (
+                                    <MenuItem key={name} value={name}>
+                                      <Checkbox
+                                        checked={field.value.includes(name)}
+                                        sx={{
+                                          color: '#f54a00',
+                                          '&.Mui-checked': { color: '#f54a00' },
+                                        }}
+                                      />
+                                      <ListItemText primary={name} />
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              )}
+                            />
+                          </FormControl>
+                          <button className='p-5 bg-orange-600 hover:bg-orange-700 rounded-xl w-[100%] mt-7 cursor-pointer'>GENERATE</button>
                     </form>
                 </div>
             )}
