@@ -40,6 +40,8 @@ export default function LogsDisplayPanel({data,service_id}) {
      5:"DownloadLog"
   }
 
+  const options = ['INFO', 'ERROR', 'WARNING', 'CRITICAL', 'DEBUG'];
+
 
   const displayLogData = () => {
     const logLevel = tabMapping[currentTab];
@@ -62,10 +64,6 @@ export default function LogsDisplayPanel({data,service_id}) {
       </div>
     ); 
   };
-
-
-
-  const options = ['INFO', 'ERROR', 'WARNING', 'CRITICAL', 'DEBUG'];
 
 
 
@@ -96,7 +94,15 @@ export default function LogsDisplayPanel({data,service_id}) {
 
         const blob = await res.blob();
 
-        const url = window.URL.createObjectURL(blob);
+        if(res.ok==true)
+        {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `filtered_logs_${service_id}.csv`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        }
 
         
         
@@ -223,7 +229,7 @@ export default function LogsDisplayPanel({data,service_id}) {
                               )}
                             />
                           </FormControl>
-                          <button className='p-5 bg-orange-600 hover:bg-orange-700 rounded-xl w-[100%] mt-7 cursor-pointer'>GENERATE</button>
+                          <button className='p-5 bg-orange-600 hover:bg-orange-700 rounded-xl w-[100%] mt-7 cursor-pointer'>GENERATE AND DOWNLOAD</button>
                     </form>
                 </div>
             )}
