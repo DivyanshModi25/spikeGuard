@@ -7,8 +7,10 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import DonutChart from '@/app/components/DonutChart';
 
+
 import dynamic from 'next/dynamic';
 import LogsDisplayPanel from '@/app/components/LogsDisplayPanel';
+import Heatmap from '@/app/components/Heatmap';
 
 const LogMap = dynamic(() => import('@/app/components/LogMap'), {
   ssr: false, // Disable Server Side Rendering for Leaflet
@@ -33,6 +35,7 @@ const [totalLogs,setTotalLogs]=useState(0)
 const [errorLogs,setErrorLogs]=useState(0)
 const [errorRate,setErrorRate]=useState(0)
 const [allLogs,setAllLogs]=useState({})
+const [heatmapData, setHeatmapData] = useState([]);
 
 
   const fetchData = async () => {
@@ -185,6 +188,38 @@ const [allLogs,setAllLogs]=useState({})
       }
     }
 
+    const fetchDailyData=async()=>{
+      try {
+        const res=await fetch("http://localhost/analyze/metrics/daily_traffic",{
+          method:"POST",
+          headers:{
+            "content-type":"application/json"
+          },
+          credentials:"include",
+          body:JSON.stringify({service_id:service_id})
+        })
+
+        const data=await res.json();
+        if(res.ok==true)
+        {
+          console.log(data);
+          
+           setHeatmapData(
+  data.map(entry => ({
+    date: entry.day,
+    count: Number(entry.total_logs)
+  }))
+);
+        }
+        
+      } catch (error) {
+        console.log(error);
+        
+      }
+    }
+
+    
+    fetchDailyData()
     fetch_total_counts()
     fetch_all_logs()
     fetch_users_location_data()
@@ -351,16 +386,20 @@ const [allLogs,setAllLogs]=useState({})
         
           <div className="right panel p-4 pt-0 flex flex-col">
               <div className="flex">
-                <div className="bg-[#111111] border-1 border-[#222222] w-[750px] h-[400px] flex justify-between rounded-xl p-6 ">
+                <div className="bg-[#111111] border-1 border-[#222222] w-[300px] h-[400px] p-4 mr-3 rounded-xl flex flex-col items-center justify-center">
+                  <p className='text-xl font-semibold'>Daily Logs count</p>
+                  <Heatmap heatmapData={heatmapData}/>
+                </div>
+                <div className="bg-[#111111] border-1 border-[#222222] w-[840px] h-[400px] flex justify-between rounded-xl p-6 ">
                     <div className="flex flex-col">
                         <p className='text-xl font-semibold mb-5 text-center'>Users Locations and Log count</p>
-                        <div className="w-[700px] h-[100%] rounded-xl overflow-hidden">
+                        <div className="w-[790px] h-[100%] rounded-xl overflow-hidden">
                             <LogMap data={LogLocationSummary.log_summary}/>
                             
                         </div>
                     </div>       
                 </div>
-                <div className="bg-[#111111] w-[100%] h-[400px] rounded-xl border-1 border-[#222222] ml-3 overflow-y-scroll custom-scrollbar">
+                {/* <div className="bg-[#111111] w-[100%] h-[400px] rounded-xl border-1 border-[#222222] ml-3 overflow-y-scroll custom-scrollbar">
                     <p className='text-center p-4 translate-y-2'>Country based activity</p>
                     {[...LogLocationSummary.log_summary]  // spread to avoid mutating original
                       .sort((a, b) => b.count - a.count)   // descending sort
@@ -370,7 +409,8 @@ const [allLogs,setAllLogs]=useState({})
                           <p>{location.count} logs</p>
                         </div>
                     ))}
-                </div>
+                </div> */}
+                
               </div>
               <LogsDisplayPanel data={allLogs} service_id={service_id}/>
           </div>

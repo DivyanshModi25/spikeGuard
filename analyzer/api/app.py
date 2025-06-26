@@ -1,7 +1,7 @@
 from flask import Flask,request,jsonify,send_file
 from db import sessionLocal
 from models import AggregatedMetric,Service,Log
-from sqlalchemy import func,case
+from sqlalchemy import func,case,asc
 from decorator import token_required
 from datetime import datetime,timedelta
 import pytz
@@ -54,25 +54,28 @@ def service_metrices():
 @app.route("/metrics/daily_traffic",methods=['POST'])
 @token_required
 def daily_traffic():
-    db=sessionLocal()
+    db = sessionLocal()
     try:
-        service_id=request.service_id
-        dev_id=request.dev_id
+        data=request.json 
+        service_id = data['service_id']
+        dev_id = request.dev_id
 
         if not validate_user_service_ownership(db, dev_id, service_id):
             return jsonify({"error": "Unauthorized access"}), 403
 
-        today = datetime.utcnow().date()
-        start_date = today - timedelta(days=30)
+        # Time range: last 30 days
+        tz = pytz.timezone("Asia/Kolkata")
+        now = datetime.now(tz)
+        start_time = now - timedelta(days=30)
 
         data = db.query(
-            func.date(AggregatedMetric.timestamp).label("day"),
+            func.date(AggregatedMetric.time_bucket).label("day"),
             func.sum(AggregatedMetric.total_logs).label("total")
         ).filter(
             AggregatedMetric.service_id == service_id,
-            AggregatedMetric.timestamp >= start_date
+            AggregatedMetric.time_bucket >= start_time
         ).group_by("day")\
-        .order_by("day DESC").all()
+        .order_by(asc("day")).all()
 
         result = [{"day": str(row.day), "total_logs": row.total} for row in data]
         return jsonify(result)

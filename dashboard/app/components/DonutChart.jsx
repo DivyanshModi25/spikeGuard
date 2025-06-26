@@ -37,7 +37,6 @@ const renderCustomizedLabel = ({
 };
 
 export default function DonutChart({ data }) {
-  const total = data.reduce((acc, item) => acc + item.count, 0);
 
   return (
     <div className="bg-[#111111] rounded-2xl p-6 shadow-lg w-[300px] h-[320px] border-1 border-[#222222] m-4">

@@ -52,3 +52,32 @@ body {
   border-radius: 8px;
   border: 2px solid transparent;
 }
+
+
+.color-empty {
+  fill: #222222 !important;
+}
+.color-scale-1 {
+  fill: #411906  !important;
+}
+.color-scale-2 {
+  fill: #682608 !important;
+}
+.color-scale-3 {
+  fill: #94360b !important;
+}
+.color-scale-4 {
+  fill: #ff5100 !important;
+}
+
+.react-calendar-heatmap text {
+  font-size: 8px;
+  fill: #888; /* optional: gray out */
+}
+
+/* Example: Hide only the first label */
+.react-calendar-heatmap text:first-child {
+  font-size: 5px;
+  text-align: center;
+  transform: translateX(25px);
+}
