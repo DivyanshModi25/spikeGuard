@@ -1,5 +1,6 @@
 import jwt
 import requests
+from models import Service
 
 with open('./public.pem', 'r') as public:
     PUBLIC_KEY = public.read()
@@ -31,4 +32,7 @@ def get_ip_location(ip):
     return None
     
 
+
+def validate_user_service_ownership(db, dev_id, service_id):
+    return db.query(Service).filter_by(owner_id=dev_id, service_id=service_id).first() is not None
 

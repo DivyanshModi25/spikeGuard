@@ -6,10 +6,11 @@ from decorator import token_required
 from datetime import datetime,timedelta
 import pytz
 from dateutil.relativedelta import relativedelta
-from utils import get_ip_location
+from utils import get_ip_location,validate_user_service_ownership
 from collections import defaultdict
 import csv
 from io import StringIO,BytesIO
+
 
 app = Flask(__name__)
 
@@ -50,41 +51,6 @@ def service_metrices():
     return jsonify(result)
 
 
-@app.route("/metrics/service/<int:service_id>/history")
-@token_required
-def service_history(service_id):
-    db = sessionLocal()
-    try:
-        dev_id = request.dev_id  # We get user ID from token (auth service)
-
-        # First, get all services owned by the user
-        services = db.query(Service).filter_by(owner_id=dev_id).all()
-        service_ids = [service.service_id for service in services]
-
-        if not service_ids:
-            return jsonify([])
-
-
-        data = db.query(
-            AggregatedMetric.time_bucket,
-            AggregatedMetric.total_logs,
-            AggregatedMetric.error_logs
-        ).filter(AggregatedMetric.service_id == service_id).order_by(AggregatedMetric.time_bucket).all()
-
-        result = []
-        for row in data:
-            result.append({
-                "time_bucket": row[0].isoformat(),
-                "total_logs": row[1],
-                "error_logs": row[2]
-            })
-
-    finally:
-        db.close()
-
-    return jsonify(result)
-
-
 @app.route("/metrics/daily_traffic",methods=['POST'])
 @token_required
 def daily_traffic():
@@ -92,6 +58,9 @@ def daily_traffic():
     try:
         service_id=request.service_id
         dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
 
         today = datetime.utcnow().date()
         start_date = today - timedelta(days=30)
@@ -119,6 +88,10 @@ def hourly_traffic():
     try:
         data = request.json
         service_id = data['service_id']
+        dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
 
         # Current time floored to the current hour
         tz = pytz.timezone("Asia/Kolkata")
@@ -161,14 +134,17 @@ def hourly_traffic():
 
 
 @app.route("/metrics/monthly_trafic",methods=['POST'])
-# @token_required
+@token_required
 def monthly_traffic():
     db = sessionLocal()
     try:
         data = request.json
         service_id = data['service_id']
+        dev_id=request.dev_id
 
-        # Time setup: Asia/Kolkata timezone
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
+
 
         tz = pytz.timezone("Asia/Kolkata")
         now = datetime.now(tz).replace(second=0, microsecond=0)
@@ -222,6 +198,10 @@ def log_level_count():
     try:
         data = request.json 
         service_id = data['service_id']
+        dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
 
         if not service_id:
             return jsonify({'error': 'Missing service_id'}), 400
@@ -249,6 +229,10 @@ def traffic_meter():
     try:
         data=request.json
         service_id=data['service_id']
+        dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
 
         if service_id is None:
             return jsonify({"error": "service_id is required"}), 400
@@ -288,6 +272,10 @@ def total_service_logs():
     try:
         data = request.get_json()
         service_id = data['service_id']
+        dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
         
         result = (
             db.query(
@@ -324,6 +312,10 @@ def log_locations():
     try:
         data = request.get_json()
         service_id = data['service_id']
+        dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
 
         # Step 1: Query all user_ip counts at once
         ip_counts = (
@@ -378,6 +370,7 @@ def log_locations():
 
 
 @app.route('/display_top_logs', methods=['POST'])
+@token_required
 def get_top_logs():
     db = sessionLocal()
     results = {}
@@ -385,6 +378,11 @@ def get_top_logs():
     try:
         data=request.json
         service_id=data['service_id']
+        dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
+        
         for level in ['ERROR', 'CRITICAL', 'INFO', 'WARNING','DEBUG']:
             logs = (
                 db.query(Log)
@@ -410,6 +408,7 @@ def get_top_logs():
 
 
 @app.route('/download_logs', methods=['POST'])
+@token_required
 def download_logs():
     db = sessionLocal()
 
@@ -417,6 +416,12 @@ def download_logs():
         # Params
         data=request.json 
         service_id=data['service_id']
+        dev_id=request.dev_id
+
+        if not validate_user_service_ownership(db, dev_id, service_id):
+            return jsonify({"error": "Unauthorized access"}), 403
+        
+
         start = data["start_time"]
         end = data["end_time"]
         log_levels = data.get("log_level", [])
@@ -438,7 +443,7 @@ def download_logs():
         # Generate CSV in memory
         si = StringIO()
         writer = csv.writer(si)
-        writer.writerow(["ID", "Timestamp", "Level", "Message","user ip"])
+        writer.writerow(["LOG_ID", "Timestamp", "Level", "Message","user ip"])
         for log in logs:
             writer.writerow([log.log_id, log.timestamp, log.log_level, log.message,log.user_ip])
 
