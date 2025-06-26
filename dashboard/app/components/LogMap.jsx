@@ -18,8 +18,7 @@ export default function LogMap({ data }) {
     <div style={{ height: '100%', width: '100%'}}>
       <MapContainer center={[20, 0]} zoom={2} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://carto.com/">CARTO</a> & OpenStreetMap contributors'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         {data.map((entry, index) => {
           console.log(index+": "+entry);          

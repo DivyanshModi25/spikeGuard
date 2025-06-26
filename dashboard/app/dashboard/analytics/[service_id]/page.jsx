@@ -350,14 +350,27 @@ const [allLogs,setAllLogs]=useState({})
           </div>
         
           <div className="right panel p-4 pt-0 flex flex-col">
-              <div className="bg-[#111111] border-1 border-[#222222] w-[750px] h-[400px] flex justify-between rounded-xl p-6 ">
-                  <div className="flex flex-col">
-                    <p className='text-xl font-semibold mb-5 text-center'>Users Locations and Log count</p>
-                    <div className="w-[700px] h-[100%] rounded-xl overflow-hidden">
-                        <LogMap data={LogLocationSummary.log_summary}/>
-                    </div>
-                  </div>
-                  
+              <div className="flex">
+                <div className="bg-[#111111] border-1 border-[#222222] w-[750px] h-[400px] flex justify-between rounded-xl p-6 ">
+                    <div className="flex flex-col">
+                        <p className='text-xl font-semibold mb-5 text-center'>Users Locations and Log count</p>
+                        <div className="w-[700px] h-[100%] rounded-xl overflow-hidden">
+                            <LogMap data={LogLocationSummary.log_summary}/>
+                            
+                        </div>
+                    </div>       
+                </div>
+                <div className="bg-[#111111] w-[100%] h-[400px] rounded-xl border-1 border-[#222222] ml-3 overflow-y-scroll custom-scrollbar">
+                    <p className='text-center p-4 translate-y-2'>Country based activity</p>
+                    {[...LogLocationSummary.log_summary]  // spread to avoid mutating original
+                      .sort((a, b) => b.count - a.count)   // descending sort
+                      .map((location, i) => (
+                        <div key={i} className='bg-[#222222] flex justify-between p-4 m-2 rounded-xl'>
+                          <p>{location.country}</p>
+                          <p>{location.count} logs</p>
+                        </div>
+                    ))}
+                </div>
               </div>
               <LogsDisplayPanel data={allLogs} service_id={service_id}/>
           </div>
