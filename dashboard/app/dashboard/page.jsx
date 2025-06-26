@@ -276,9 +276,6 @@ export default function Dashboard() {
                     <div className='flex gap-5'>
                       <h3 className="text-xl font-semibold text-white mb-1">{service.service_name}</h3>
                       <div className="flex items-center space-x-4 text-sm">
-                        <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded-lg font-medium">
-                          "service.category"
-                        </span>
                         <div className="flex items-center space-x-1">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                           <span className="text-green-400 font-medium">Active</span>
@@ -294,13 +291,7 @@ export default function Dashboard() {
                         <BarChart3 className="w-4 h-4" />
                         <span className='text-[12px]'>View Analytics</span>
                       </button>
-                      <button
-                        onClick={() => goToAnalysis(service)}
-                        className="flex items-center space-x-2 bg-[#333333] hover:bg-gray-600 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span className='text-[12px]'>View Logs</span>
-                      </button>
+                      
                       <button
                         onClick={()=>{handleDelete(service.service_id)}}
                         className="flex items-center space-x-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 px-2 py-2 rounded-xl text-sm font-medium transition-all duration-200 border border-red-600/30 cursor-pointer"

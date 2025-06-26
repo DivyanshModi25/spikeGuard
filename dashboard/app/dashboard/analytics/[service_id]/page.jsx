@@ -195,13 +195,19 @@ const [allLogs,setAllLogs]=useState({})
 
   return (
     <div className='bg-[#4e4e4e31] w-[100vw] h-[100vh] absolute p-5'>
-      {/* Breadcrumb */}
-      <div className="breadcrum p-3">
-        <Breadcrumbs aria-label="breadcrumb" separator="›" color="gray">
-          <Link underline="hover" href="/" color='gray' className='text-white'>Home</Link>
-          <Link underline="hover" href="/dashboard" color='gray'>Dashboard</Link>
-          <Typography sx={{ color: 'white' }}>{service_name}</Typography>
-        </Breadcrumbs>
+      <div className="flex items-center justify-between">
+        {/* Breadcrumb */}
+        <div className="breadcrum p-3">
+          <Breadcrumbs aria-label="breadcrumb" separator="›" color="gray">
+            <Link underline="hover" href="/" color='gray' className='text-white'>Home</Link>
+            <Link underline="hover" href="/dashboard" color='gray'>Dashboard</Link>
+            <Typography sx={{ color: 'white' }}>{service_name}</Typography>
+          </Breadcrumbs>
+        </div>
+        <div className="-translate-x-10">
+          {/* <p className='text-xl font-semibold'>{service_name}</p> */}
+        </div>
+        <div className=""></div>
       </div>
 
       
@@ -344,10 +350,10 @@ const [allLogs,setAllLogs]=useState({})
           </div>
         
           <div className="right panel p-4 pt-0 flex flex-col">
-              <div className="bg-[#111111] border-1 border-[#222222] w-[550px] h-[400px] flex justify-between rounded-xl p-6 ">
+              <div className="bg-[#111111] border-1 border-[#222222] w-[750px] h-[400px] flex justify-between rounded-xl p-6 ">
                   <div className="flex flex-col">
                     <p className='text-xl font-semibold mb-5 text-center'>Users Locations and Log count</p>
-                    <div className="w-[500px] h-[100%] rounded-xl overflow-hidden">
+                    <div className="w-[700px] h-[100%] rounded-xl overflow-hidden">
                         <LogMap data={LogLocationSummary.log_summary}/>
                     </div>
                   </div>

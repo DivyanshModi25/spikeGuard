@@ -7,7 +7,7 @@ import pytz
 INGESTION_URL = "http://localhost/ingest/ingest"  # replace with actual port if different
 
 # Dummy API key (put valid one here after service creation)
-API_KEY = "bc825bc457ac028e096ca8b8750cff8b"
+API_KEY = "3b5b5fee5c24fa6360856657db704e63"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]
@@ -30,7 +30,8 @@ while True:
         "api_key": API_KEY,
         "log_level": random.choice(log_levels),
         "message": "This is a test log message.",
-        "timestamp":random_timestamp_last_24_hours()
+        "timestamp":random_timestamp_last_24_hours(),
+        "user_ip":random.choice(["8.8.8.8","1.1.1.1","185.53.178.8","133.130.112.12","200.147.67.142","51.140.123.216","142.251.16.100","103.27.9.44","196.41.123.130","62.210.36.44"])
     }
 
     response = requests.post(INGESTION_URL, json=log_data)
