@@ -365,7 +365,7 @@ const [allLogs,setAllLogs]=useState({})
                     {[...LogLocationSummary.log_summary]  // spread to avoid mutating original
                       .sort((a, b) => b.count - a.count)   // descending sort
                       .map((location, i) => (
-                        <div key={i} className='bg-[#222222] flex justify-between p-4 m-2 rounded-xl'>
+                        <div key={i} className='bg-[#222222] flex justify-between p-4 m-3 mx-5 rounded-xl'>
                           <p>{location.country}</p>
                           <p>{location.count} logs</p>
                         </div>
