@@ -12,3 +12,7 @@ provider "aws" {
   region = "ap-south-1"
 }
 
+
+variable "aws_region" {
+  default = "ap-south-1"
+}

@@ -7,14 +7,18 @@ import os
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # SECRET_KEY = "laa&^%$#iu298374*&*&97543SD^&^$sJASD5&^$#4325JH*^$#@F"
 # Get absolute path to this file's directory
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Read the keys
-with open(os.path.join(BASE_DIR, '../private.pem'), 'r') as private:
-    PRIVATE_KEY = private.read()
+# # Read the keys
+# with open(os.path.join(BASE_DIR, '../private.pem'), 'r') as private:
+#     PRIVATE_KEY = private.read()
 
-with open(os.path.join(BASE_DIR, '../public.pem'), 'r') as public:
-    PUBLIC_KEY = public.read()
+# with open(os.path.join(BASE_DIR, '../public.pem'), 'r') as public:
+#     PUBLIC_KEY = public.read()
+
+# Read RSA keys from environment variables
+PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
+PUBLIC_KEY = os.environ.get("PUBLIC_KEY")
 
 
 def hash_password(password):
