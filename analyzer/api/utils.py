@@ -1,9 +1,9 @@
 import jwt
 import requests
 from models import Service
+import os 
 
-with open('./public.pem', 'r') as public:
-    PUBLIC_KEY = public.read()
+PUBLIC_KEY = os.environ.get("PUBLIC_KEY")
 
 
 def verify_access_token(token):

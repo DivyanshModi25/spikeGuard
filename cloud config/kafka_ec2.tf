@@ -54,7 +54,6 @@ resource "aws_instance" "kafka_ec2" {
   user_data = <<-EOF
               #!/bin/bash -xe
               sudo apt update -y
-              touch txt.txt
               sudo apt install -y docker.io docker-compose
               sudo systemctl enable docker
               sudo systemctl start docker
@@ -63,7 +62,7 @@ resource "aws_instance" "kafka_ec2" {
               sudo usermod -aG docker ubuntu
 
               newgrp docker
-
+              cd /home/ubuntu
 
               PRIVATE_IP=$(hostname -I | awk '{print $1}')
               export PRIVATE_IP

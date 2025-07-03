@@ -3,7 +3,6 @@ from sqlalchemy.orm import sessionmaker,declarative_base
 import os
 
 DATABASE_URL=os.getenv('DATABASE_URL')
-# DATABASE_URL="mysql+pymysql://spikeuser:111@localhost:3307/spikeguard"
 
 engine=create_engine(DATABASE_URL)
 sessionLocal = sessionmaker(bind=engine)
