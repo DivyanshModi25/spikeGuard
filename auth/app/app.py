@@ -70,8 +70,8 @@ def login():
             "access_token", 
             token, 
             httponly=True, 
-            secure=True, 
-            samesite='Strict'
+            secure=False, 
+            samesite='Lax'
         )
         resp.status_code = 201
     except Exception as e:
@@ -89,8 +89,8 @@ def logout():
         "", 
         expires=0, 
         httponly=True, 
-        secure=True, 
-        samesite='Strict'
+        secure=False, 
+        samesite='Lax'
     )
     resp.status_code=200
     return resp

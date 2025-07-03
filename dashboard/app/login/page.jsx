@@ -11,7 +11,7 @@ export default function LoginPage() {
   const loginSubmit=async(data)=>{
       try {
         console.log(data);
-        const res=await fetch("http://localhost/auth/login",{
+        const res=await fetch("http://3.110.195.210/auth/login",{
           method:"POST",
           headers: {
             "Content-Type": "application/json"

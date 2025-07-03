@@ -41,8 +41,8 @@ const [heatmapData, setHeatmapData] = useState([]);
   const fetchData = async () => {
     const endpoint =
       filter === "month"
-        ? "http://localhost/analyze/metrics/monthly_trafic"
-        : "http://localhost/analyze/metrics/hourly_trafic";
+        ? "/nginx/analyze/metrics/monthly_trafic"
+        : "/nginx/analyze/metrics/hourly_trafic";
 
     try {
       const res = await fetch(endpoint, {
@@ -69,7 +69,7 @@ const [heatmapData, setHeatmapData] = useState([]);
     const fetch_log_level_count=async()=>{
       try {
 
-        const res=await fetch('http://localhost/analyze/level_count',{
+        const res=await fetch('/nginx/analyze/level_count',{
           method:"POST",
           headers:{
             "content-type":"application/json"
@@ -89,7 +89,7 @@ const [heatmapData, setHeatmapData] = useState([]);
 
     const fetch_current_traffic=async()=>{
       try {
-        const res=await fetch('http://localhost/analyze/traffic-meter',{
+        const res=await fetch('/nginx/analyze/traffic-meter',{
           method:"POST",
           credentials:'include',
           headers:{
@@ -113,7 +113,7 @@ const [heatmapData, setHeatmapData] = useState([]);
     const fetch_users_location_data=async()=>{
       try {
 
-        const res=await fetch('http://localhost/analyze/metrics/log_locations',{
+        const res=await fetch('/nginx/analyze/metrics/log_locations',{
           method:"POST",
           headers:{
             "content-type":"application/json"
@@ -141,7 +141,7 @@ const [heatmapData, setHeatmapData] = useState([]);
     const fetch_total_counts=async()=>{
       try {
 
-        const res=await fetch('http://localhost/analyze/metrics/total_service_logs',{
+        const res=await fetch('/nginx/analyze/metrics/total_service_logs',{
           method:"POST",
           credentials:"include",
           headers:{
@@ -167,7 +167,7 @@ const [heatmapData, setHeatmapData] = useState([]);
     const fetch_all_logs=async()=>{
       try {
 
-        const res=await fetch('http://localhost/analyze/display_top_logs',{
+        const res=await fetch('/nginx/analyze/display_top_logs',{
           method:"POST",
           headers:{
             "content-type":"application/json"
@@ -190,7 +190,7 @@ const [heatmapData, setHeatmapData] = useState([]);
 
     const fetchDailyData=async()=>{
       try {
-        const res=await fetch("http://localhost/analyze/metrics/daily_traffic",{
+        const res=await fetch("/nginx/analyze/metrics/daily_traffic",{
           method:"POST",
           headers:{
             "content-type":"application/json"
