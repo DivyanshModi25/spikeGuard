@@ -15,6 +15,7 @@ def health():
 @app.route("/ingest",methods=['POST'])
 def ingest_log():
     db=sessionLocal()
+    print("/ingest entered")
 
     try:
         data = request.json 
@@ -25,6 +26,7 @@ def ingest_log():
                 return jsonify({"error": f"Missing field {field}"}), 400
         
 
+        print("now checking for api_key")
         service = db.query(models.Service).filter_by(api_key=data['api_key']).first()
         if not service:
             return jsonify({"error": "Invalid api_key"}), 401
