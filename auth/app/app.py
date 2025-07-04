@@ -69,9 +69,9 @@ def login():
         resp.set_cookie(
             "access_token", 
             token, 
-            httponly=True, 
-            secure=False, 
-            samesite='Lax'
+            httponly=True,  
+            samesite='Lax',
+            max_age=60*60*24*2
         )
         resp.status_code = 201
     except Exception as e:
@@ -89,7 +89,6 @@ def logout():
         "", 
         expires=0, 
         httponly=True, 
-        secure=False, 
         samesite='Lax'
     )
     resp.status_code=200

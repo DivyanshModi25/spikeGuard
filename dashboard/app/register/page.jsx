@@ -11,7 +11,7 @@ export default function RegistrationPage() {
   const registerSubmit=async(data)=>{
       try {
         console.log(data);
-        const res=await fetch("http://3.110.195.210/auth/register",{
+        const res=await fetch("/api/auth/register",{
           method:"POST",
           headers: {
             "Content-Type": "application/json"

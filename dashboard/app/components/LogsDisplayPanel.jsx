@@ -78,7 +78,7 @@ export default function LogsDisplayPanel({data,service_id}) {
           log_level: data.log_levels
         };
 
-        const res=await fetch('/nginx/analyze/download_logs',{
+        const res=await fetch('/api/analyze/download_logs',{
             method:"POST",
             headers:{
               "content-type":"application/json",

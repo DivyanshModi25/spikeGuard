@@ -4,10 +4,10 @@ import time
 import pytz
 
 # Ingestion API endpoint
-INGESTION_URL = "http://15.206.145.247/ingest/ingest"  # replace with actual port if different
+INGESTION_URL = "http://13.233.178.82/ingest/ingest"  # replace with actual port if different
 
 # Dummy API key (put valid one here after service creation)
-API_KEY = "a1fe742cf32407d35817b94b85208c42"
+API_KEY = "1f73be9bf16e92ff3b6bb9be65748153"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]
