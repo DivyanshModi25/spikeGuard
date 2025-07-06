@@ -1,4 +1,5 @@
 from flask import Flask,request,jsonify
+from sqlalchemy import func 
 from db import engine, sessionLocal,Base
 from models import Developers,Service,AggregatedMetric
 import utils
@@ -12,6 +13,7 @@ try:
     Base.metadata.create_all(bind=engine)
 except sqlalchemy.exc.OperationalError as e:
     print(f"Skipping table creation: {e}")
+
 
 @app.route("/health")
 def health():
@@ -192,26 +194,32 @@ def list_services():
         services=db.query(Service).filter_by(owner_id=dev_id).all()
         services_list=[]
 
-        try:
-            metrics_response = requests.get("http://nginx/analyze/metrics/services", cookies=request.cookies)
-            metrics_data = metrics_response.json() if metrics_response.status_code == 200 else []
-        except Exception as e:
-            metrics_data = []  # Fallback
+        for service in services:
+            service_id=service.service_id
 
-        metrics_map = {item["service_id"]: item for item in metrics_data}
+            log_count_data = (
+                db.query(
+                    func.sum(AggregatedMetric.total_logs).label("total_logs"),
+                    func.sum(AggregatedMetric.error_logs).label("error_logs")
+                )
+                .filter(AggregatedMetric.service_id == service_id)
+                .group_by(AggregatedMetric.service_id)
+                .first()
+            )
 
-        # Step 4: Merge service data with metrics
-        services_list = []
-        for s in services:
-            metric = metrics_map.get(s.service_id, {"total_logs": 0, "error_logs": 0})
-            services_list.append({
-                "service_id": s.service_id,
-                "service_name": s.service_name,
-                "api_key": s.api_key,
-                "flag": s.flag,
-                "total_logs": int(metric["total_logs"]),
-                "error_logs": int(metric["error_logs"])
-            })
+            total_logs = log_count_data.total_logs if log_count_data else 0
+            error_logs = log_count_data.error_logs if log_count_data else 0
+
+            data={
+                "service_id":service_id,
+                "service_name":service.service_name,
+                "api_key":service.api_key,
+                "flag":service.flag,
+                "total_logs":total_logs,
+                "error_logs":error_logs
+            }
+
+            services_list.append(data)
 
     except Exception as e:
         return jsonify({"message":f"{e}"})

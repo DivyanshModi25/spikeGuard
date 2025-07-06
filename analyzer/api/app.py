@@ -15,40 +15,9 @@ from io import StringIO,BytesIO
 app = Flask(__name__)
 
 
-@app.route("/metrics/services")
-@token_required
-def service_metrices():
-    db=sessionLocal()
-
-    try:
-        dev_id = request.dev_id  # We get user ID from token (auth service)
-
-        # First, get all services owned by the user
-        services = db.query(Service).filter_by(owner_id=dev_id).all()
-        service_ids = [service.service_id for service in services]
-
-        if not service_ids:
-            return jsonify([])
-
-
-        data = db.query(
-            AggregatedMetric.service_id,
-            func.sum(AggregatedMetric.total_logs),
-            func.sum(AggregatedMetric.error_logs)
-        ).group_by(AggregatedMetric.service_id).all()
-
-        result = []
-        for row in data:
-            result.append({
-                "service_id": row[0],
-                "total_logs": row[1],
-                "error_logs": row[2]
-            })
-        
-    finally:
-        db.close()
-
-    return jsonify(result)
+@app.route("/health")
+def health():
+    return jsonify({"status":"analyzer api on"})
 
 
 @app.route("/metrics/daily_traffic",methods=['POST'])
