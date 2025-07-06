@@ -54,7 +54,7 @@ export default function Dashboard() {
   const handleCreateService=async(data)=>{
     try {
       const service_name=data.service_name 
-      const res=await fetch('/api/auth/services',{
+      const res=await fetch('/api/serviceManage/services',{
         method:"POST",
         credentials:'include',
         headers:{
@@ -90,7 +90,7 @@ export default function Dashboard() {
 
     const serviceList=async()=>{
         try {
-          const res=await fetch("/api/auth/services",{
+          const res=await fetch("/api/serviceManage/services",{
             credentials:'include'
           })
           const data=await res.json()
@@ -114,7 +114,7 @@ export default function Dashboard() {
   const handleDelete=async(service_id)=>{
       try {
         console.log(service_id);
-        const res=await fetch('/api/auth/delete_service',{
+        const res=await fetch('/api/serviceManage/delete_service',{
           method:'POST',
           headers:{
             'content-type':'application/json'
