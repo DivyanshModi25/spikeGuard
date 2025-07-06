@@ -39,6 +39,7 @@ resource "aws_db_instance" "logmonitor" {
   engine                 = "mysql"
   engine_version         = "8.0"
   instance_class         = "db.t3.micro"
+  # multi_az               = true
   allocated_storage      = 20
   storage_type           = "gp2"
   username               = "logUser"
