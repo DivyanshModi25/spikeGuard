@@ -46,9 +46,9 @@ export default function Dashboard() {
     )
   : [];
 
-  const total_logs = serviceList.reduce((sum, service) => sum + service.total_logs, 0);
+  const total_logs = serviceList.filter(service => service.flag != 0).reduce((sum, service) => sum + Number(service.total_logs), 0);
   // const total_logs = 0;
-  const TotalErrorLogs = serviceList.reduce((sum, service) => sum + service.error_logs, 0);
+  const TotalErrorLogs = serviceList.filter(service => service.flag != 0).reduce((sum, service) => sum + Number(service.error_logs), 0);
   // const TotalErrorLogs = 0;
 
 
