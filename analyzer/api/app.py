@@ -15,12 +15,12 @@ from io import StringIO,BytesIO
 app = Flask(__name__)
 
 
-@app.route("/health")
+@app.route("/analyze/health")
 def health():
     return jsonify({"status":"analyzer api on"})
 
 
-@app.route("/metrics/daily_traffic",methods=['POST'])
+@app.route("/analyze/metrics/daily_traffic",methods=['POST'])
 @token_required
 def daily_traffic():
     db = sessionLocal()
@@ -52,7 +52,7 @@ def daily_traffic():
     finally:
         db.close()
 
-@app.route("/metrics/hourly_trafic",methods=['POST'])
+@app.route("/analyze/metrics/hourly_trafic",methods=['POST'])
 @token_required
 def hourly_traffic():
     db = sessionLocal()
@@ -105,7 +105,7 @@ def hourly_traffic():
         db.close()
 
 
-@app.route("/metrics/monthly_trafic",methods=['POST'])
+@app.route("/analyze/metrics/monthly_trafic",methods=['POST'])
 @token_required
 def monthly_traffic():
     db = sessionLocal()
@@ -162,7 +162,7 @@ def monthly_traffic():
         db.close()
 
 
-@app.route('/level_count', methods=['POST'])
+@app.route('/analyze/level_count', methods=['POST'])
 @token_required
 def log_level_count():
     db=sessionLocal()
@@ -192,7 +192,7 @@ def log_level_count():
     return jsonify(output), 200
 
 
-@app.route('/traffic-meter',methods=['POST'])
+@app.route('/analyze/traffic-meter',methods=['POST'])
 @token_required
 def traffic_meter():
 
@@ -236,7 +236,7 @@ def traffic_meter():
         db.close()
 
 
-@app.route("/metrics/total_service_logs",methods=['POST'])
+@app.route("/analyze/metrics/total_service_logs",methods=['POST'])
 @token_required
 def total_service_logs():
     db = sessionLocal()
@@ -277,7 +277,7 @@ def total_service_logs():
         db.close()
 
 
-@app.route("/metrics/log_locations", methods=["POST"])
+@app.route("/analyze/metrics/log_locations", methods=["POST"])
 @token_required
 def log_locations():
     db = sessionLocal()
@@ -341,7 +341,7 @@ def log_locations():
         db.close()
 
 
-@app.route('/display_top_logs', methods=['POST'])
+@app.route('/analyze/display_top_logs', methods=['POST'])
 @token_required
 def get_top_logs():
     db = sessionLocal()
@@ -379,7 +379,7 @@ def get_top_logs():
         db.close()
 
 
-@app.route('/download_logs', methods=['POST'])
+@app.route('/analyze/download_logs', methods=['POST'])
 @token_required
 def download_logs():
     db = sessionLocal()

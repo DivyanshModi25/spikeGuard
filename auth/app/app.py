@@ -5,9 +5,16 @@ from models import Developers,Service,AggregatedMetric
 import utils
 from decorator import token_required
 import requests 
-
+from flask_cors import CORS
 
 app=Flask(__name__)
+
+CORS(app,
+     origins="*",
+     supports_credentials=True,
+     methods=["GET", "POST", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization"],
+     max_age=1728000)
 
 try:
     Base.metadata.create_all(bind=engine)
@@ -15,13 +22,13 @@ except sqlalchemy.exc.OperationalError as e:
     print(f"Skipping table creation: {e}")
 
 
-@app.route("/health")
+@app.route("/auth/health")
 def health():
     return jsonify({"status":"healthy"})
 
 
 # Register user(Developer)
-@app.route('/register',methods=['POST'])
+@app.route('/auth/register',methods=['POST'])
 def register():
     data=request.json
     db=sessionLocal()
@@ -52,7 +59,7 @@ def register():
     return jsonify({"message":"Developer created successfully"}),200
     
 
-@app.route('/login',methods=['POST'])
+@app.route('/auth/login',methods=['POST'])
 def login():
     data = request.json
     db=sessionLocal()
@@ -83,7 +90,7 @@ def login():
 
     return resp
 
-@app.route("/logout")
+@app.route("/auth/logout")
 def logout():
     resp = jsonify({"message": "Logged out successfully"})
     resp.set_cookie(
@@ -97,7 +104,7 @@ def logout():
     return resp
 
 
-@app.route("/developer_details",methods=['POST'])
+@app.route("/auth/developer_details",methods=['POST'])
 @token_required
 def get_developer_details():
     data=request.json

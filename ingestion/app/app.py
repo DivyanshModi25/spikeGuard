@@ -7,12 +7,12 @@ import datetime
 app=Flask(__name__)
 
 
-@app.route("/health")
+@app.route("/ingest/health")
 def health():
     return jsonify({"status": "Ingestion service is healthy"})
 
 
-@app.route("/ingest",methods=['POST'])
+@app.route("/ingest/ingest",methods=['POST'])
 def ingest_log():
     db=sessionLocal()
     print("/ingest entered")

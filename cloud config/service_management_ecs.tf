@@ -68,6 +68,12 @@ resource "aws_ecs_service" "logmonitor_service_management_service" {
     assign_public_ip = false
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.tg_service_manage.arn
+    container_name   = "service_management_service"
+    container_port   = 5000
+  }
+
   depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_attach]
 }
 

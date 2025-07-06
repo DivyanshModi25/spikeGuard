@@ -14,13 +14,13 @@ except sqlalchemy.exc.OperationalError as e:
     print(f"Skipping table creation: {e}")
 
 
-@app.route("/health")
+@app.route("/serviceManage/health")
 def health():
     return jsonify({"status":"service-management healthy"})
 
 # create services
 
-@app.route("/services",methods=['POST'])
+@app.route("/serviceManage/services",methods=['POST'])
 @token_required
 def create_service():
 
@@ -52,7 +52,7 @@ def create_service():
     return jsonify(res)
 
 
-@app.route("/delete_service",methods=['POST'])
+@app.route("/serviceManage/delete_service",methods=['POST'])
 @token_required
 def delete_service():
     data=request.json
@@ -82,7 +82,7 @@ def delete_service():
 
 
 # list services
-@app.route("/services",methods=['GET'])
+@app.route("/serviceManage/services",methods=['GET'])
 @token_required
 def list_services():
     

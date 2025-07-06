@@ -64,5 +64,11 @@ resource "aws_ecs_service" "logmonitor_ingest_service" {
     assign_public_ip = false
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.tg_ingest.arn 
+    container_name   = "ingest_service"
+    container_port   = 5000
+  }
+
   depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_attach]
 }
