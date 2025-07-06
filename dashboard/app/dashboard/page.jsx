@@ -14,23 +14,6 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedKey, setCopiedKey] = useState('');
   const [serviceList,setServiceList]=useState([])
-  // const [services, setServices] = useState([]);
-
-  // const handleCreateService = () => {
-  //   if (!newService.trim()) return;
-  //   const newEntry = {
-  //     id: Date.now(),
-  //     name: newService,
-  //     api_key: 'sk-prod-' + Math.random().toString(36).substring(2, 16),
-  //     logs: ['Service created'],
-  //     status: 'active',
-  //     requests: 0,
-  //     uptime: '100%',
-  //     category: 'Custom'
-  //   };
-  //   setServices([newEntry, ...services]);
-  //   setNewService('');
-  // };
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -47,9 +30,7 @@ export default function Dashboard() {
   : [];
 
   const total_logs = serviceList.filter(service => service.flag != 0).reduce((sum, service) => sum + Number(service.total_logs), 0);
-  // const total_logs = 0;
   const TotalErrorLogs = serviceList.filter(service => service.flag != 0).reduce((sum, service) => sum + Number(service.error_logs), 0);
-  // const TotalErrorLogs = 0;
 
 
   const handleLogout=async()=>{
