@@ -10,12 +10,6 @@ output "private_subnet_ids" {
 }
 
 
-
-# data "aws_msk_cluster" "logmonitor_msk_data" {
-#   cluster_name = aws_msk_cluster.logmonitor_msk.cluster_name
-# }
-
-# output "kafka_bootstrap_brokers" {
-#   description = "PLAINTEXT bootstrap servers to use in services"
-#   value       = data.aws_msk_cluster.logmonitor_msk_data.bootstrap_brokers
-# }
+output "ALBDomain" {
+  value=aws_lb.logMonitor_alb.dns_name
+}

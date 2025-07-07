@@ -4,10 +4,10 @@ import time
 import pytz
 
 # Ingestion API endpoint
-INGESTION_URL = "http://logmonitor-alb-1025053354.ap-south-1.elb.amazonaws.com/ingest/ingest"  # replace with actual port if different
+INGESTION_URL = "http://logmonitor-alb-940134350.ap-south-1.elb.amazonaws.com/ingest/ingest"  # replace with actual port if different
 
 # Dummy API key (put valid one here after service creation)
-API_KEY = "733661cf2569742c9eef024805aedf1e"
+API_KEY = "648ba14564cf80d1ebd02922dae1425e"
 
 # Log levels for testing
 log_levels = ["INFO", "WARNING", "ERROR", "CRITICAL", "DEBUG"]
